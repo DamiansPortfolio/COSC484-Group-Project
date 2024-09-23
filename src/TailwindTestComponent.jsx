@@ -15,7 +15,7 @@ const TailwindTestComponent = () => {
     );
 };
 
-export default ExampleComponent;
+export default TailwindTestComponent;
 
 
 // flex: Applies Flexbox layout.
