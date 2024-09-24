@@ -1,14 +1,13 @@
-
 // ArtistProfile.jsx
 import React from 'react';
 import ProfileHeader from '../components/ProfileHeader';
 import SkillsList from '../components/SkillsList';
 import PortfolioGallery from '../components/PortfolioGallery';
-import Reviews from '../components/Reviews';
+import ReviewsSection from '../components/ReviewsSection';
 
 const ArtistProfile = ({ artistData }) => {
     return (
-        <div className="artist-profile space-y-6">
+        <div className="space-y-6">
             <ProfileHeader
                 name={artistData.name}
                 title={artistData.title}
@@ -18,7 +17,7 @@ const ArtistProfile = ({ artistData }) => {
             />
             <SkillsList skills={artistData.skills} />
             <PortfolioGallery portfolioItems={artistData.portfolioItems} />
-            <Reviews rating={artistData.rating} reviewCount={artistData.reviewCount} />
+            <ReviewsSection rating={artistData.rating} reviewCount={artistData.reviewCount} />
         </div>
     );
 };
