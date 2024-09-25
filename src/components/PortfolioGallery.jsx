@@ -9,7 +9,15 @@ const PortfolioGallery = ({ portfolioItems }) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {portfolioItems.map((item, index) => (
                         <div key={index} className="bg-gray-100 rounded-lg overflow-hidden">
-                            <div className="aspect-w-16 aspect-h-9 bg-gray-200"></div>
+                            {/* Removed items-center because it looks better */}
+                            <div className="flex justify-center bg--200 h-48 w-full">
+                                {/* Use object-contain to preserve the image's aspect ratio */}
+                                <img
+                                    src={item.imageUrl}
+                                    alt={item.title}
+                                    className="object-contain max-h-full max-w-full"  // Ensures the image is fully visible
+                                />
+                            </div>
                             <p className="p-2 text-sm font-medium">{item.title}</p>
                         </div>
                     ))}

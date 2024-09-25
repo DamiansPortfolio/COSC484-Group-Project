@@ -1,5 +1,4 @@
 // ArtistProfile.jsx
-import React from 'react';
 import ProfileHeader from '../components/ProfileHeader';
 import SkillsList from '../components/SkillsList';
 import PortfolioGallery from '../components/PortfolioGallery';
