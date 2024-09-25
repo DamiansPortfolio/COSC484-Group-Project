@@ -1,3 +1,7 @@
+This file it a little example of how we can setup the file structure
+for the backend.
+
+
 /backend
 │
 ├── /config                  # Configuration files (database, environment variables)
