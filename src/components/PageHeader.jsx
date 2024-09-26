@@ -1,9 +1,9 @@
 import React from 'react';
-import logo from '../../public/commission.svg'; // Adjust the path based on your file structure
+import logo from '../assets/commission.svg';
 
 const PageHeader = () => {
     return (
-        <header className="bg-white shadow-sm">
+        <header className="bg-gray-400 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 {/* Logo */}
                 <div className="flex items-center">

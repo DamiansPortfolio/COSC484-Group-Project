@@ -1,6 +1,7 @@
 // App.jsx
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ArtistProfile from './pages/ArtistProfile';
-import PageLayout from './components/PageLayout';
+import Dashboard from './pages/Dashboard';
 
 const mockArtistData = {
   name: "Jane Doe",
@@ -20,9 +21,12 @@ const mockArtistData = {
 
 function App() {
   return (
-    <PageLayout>
-      <ArtistProfile artistData={mockArtistData} />
-    </PageLayout>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/profile" element={<ArtistProfile artistData={mockArtistData} />} />
+      </Routes>
+    </Router>
   );
 }
 
