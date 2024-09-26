@@ -1,19 +1,28 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';  // Import useParams to get the artist ID from the URL
+import { useParams, Link } from 'react-router-dom';
 import ProfileHeader from '../components/artist_profile/ProfileHeader';
 import SkillsList from '../components/artist_profile/SkillsList';
 import PortfolioGallery from '../components/artist_profile/PortfolioGallery';
 import ReviewsSection from '../components/artist_profile/ReviewsSection';
 import PageLayout from '../components/PageLayout';
-import artistData from '../artistData';  // Import artist data
+import artistData from '../artistData';
 
 const ArtistProfile = () => {
-    const { id } = useParams();  // Get the artist ID from the route parameters
-    const artist = artistData.find(artist => artist.id === id);  // Find the artist by ID
+    const { id } = useParams();
+    const artist = artistData.find(artist => artist.id === id);
 
-    // Handle case where artist is not found
     if (!artist) {
-        return <div>Artist not found</div>;
+        return (
+            <PageLayout>
+                <div className="flex flex-col items-center justify-center h-screen text-center">
+                    <h1 className="text-3xl font-bold mb-4">Artist Not Found</h1>
+                    <p className="text-gray-600 mb-8">Sorry, we couldn't find the artist you're looking for.</p>
+                    <Link to="/" className="text-blue-500 underline">
+                        Go back to Dashboard
+                    </Link>
+                </div>
+            </PageLayout>
+        );
     }
 
     return (
