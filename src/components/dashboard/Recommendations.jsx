@@ -1,23 +1,24 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from 'react-router-dom';  // Import Link from React Router
+import artistData from '../../artistData';  // Import artist data
 
 const Recommendations = () => {
-  const recommendations = [
-    { title: 'Job: UI Designer for Mobile Game', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' },
-    { title: 'Artist: Jane Smith - 3D Modeler', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' }
-  ];
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Recommended for You</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
-        {recommendations.map((recommendation, index) => (
-          <Card key={index}>
+        {artistData.map((artist) => (
+          <Card key={artist.id}>
             <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">{recommendation.title}</h3>
-              <p className="text-sm text-gray-600">{recommendation.description}</p>
+              <h3 className="font-semibold mb-2">
+                <Link to={`/profile/${artist.id}`}>
+                  {artist.title}
+                </Link>
+              </h3>
+              <p className="text-sm text-gray-600">{artist.name}</p>
             </CardContent>
           </Card>
         ))}
