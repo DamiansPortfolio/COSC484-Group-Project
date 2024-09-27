@@ -227,6 +227,21 @@ const artistData = [
         ],
         rating: 4.6,
         reviewCount: 65
+    },
+    {
+        id: "16",
+        name: "Ivan Goncharuk",
+        title: "Game Developer | UI Designer",
+        location: "Towson, US",
+        memberSince: "2024",
+        avatarUrl: "/path/to/avatar15.jpg",
+        skills: ["Sound Design", "Audio Engineering", "Composition", "Mixing"],
+        portfolioItems: [
+            { imageUrl: "/example_audio_track.mp3", title: "Game Soundtrack" },
+            { imageUrl: "/example_audio_track.mp3", title: "Ambient Sound Design" },
+        ],
+        rating: 1.2,
+        reviewCount: 42000
     }
 
 ];
