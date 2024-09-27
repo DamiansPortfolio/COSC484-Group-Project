@@ -1,32 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Link } from 'react-router-dom';
-import artistData from '../../artistData';
 
 const Recommendations = () => {
+  const [artists, setArtists] = useState([]);
   const [selectedSkill, setSelectedSkill] = useState('');
   const [sortOption, setSortOption] = useState('');
 
-  // Function to handle filtering by skill
-  const filterBySkill = (artists) => {
-    if (selectedSkill === '') return artists;
-    return artists.filter(artist => artist.skills.includes(selectedSkill));
-  };
+  useEffect(() => {
+    const fetchArtists = async () => {
+      let url = `http://localhost:5001/api/artists?`;  // Use full backend URL with port
 
-  // Function to handle sorting by name or rating
-  const sortArtists = (artists) => {
-    if (sortOption === 'name') {
-      return [...artists].sort((a, b) => a.name.localeCompare(b.name));
-    }
-    if (sortOption === 'rating') {
-      return [...artists].sort((a, b) => b.rating - a.rating);
-    }
-    return artists;
-  };
+      if (selectedSkill) {
+        url += `skill=${selectedSkill}&`;
+      }
+      if (sortOption) {
+        url += `sort=${sortOption}`;
+      }
 
-  const displayedArtists = sortArtists(filterBySkill(artistData));
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log(data);  // Log the data for debugging
+      setArtists(data);
+    };
+
+    fetchArtists();
+  }, [selectedSkill, sortOption]);
+
+
 
   return (
     <Card>
@@ -61,15 +64,15 @@ const Recommendations = () => {
         {/* Scrollable area for artist cards */}
         <ScrollArea className="h-80">
           <CardContent className="grid grid-cols-2 gap-4">
-            {displayedArtists.map((artist) => (
+            {artists.map((artist) => (
               <Card key={artist.id}>
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-2">
                     <Link to={`/profile/${artist.id}`}>
-                      {artist.title}
+                      {artist.name}
                     </Link>
                   </h3>
-                  <p className="text-sm text-gray-600">{artist.name}</p>
+                  <p className="text-sm text-gray-600">{artist.skills.join(', ')}</p>
                   {/* Show artist rating */}
                   <p className="text-sm text-yellow-500">Rating: {artist.rating} ★</p>
                 </CardContent>

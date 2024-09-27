@@ -17,6 +17,7 @@ const artistData = [
         rating: 4.8,
         reviewCount: 69
     },
+
     {
         id: "2",
         name: "John Smith",

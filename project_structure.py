@@ -9,10 +9,17 @@ RELEVANT_EXTENSIONS = {
     ".html": "html",
 }
 
-# Components to extract content from
-SPECIFIC_COMPONENTS = ["Recommendations.jsx", "package.json"]
-
-# SPECIFIC_COMPONENTS = ["QuickStats.jsx", "RecentActivity.jsx", "Recommendations.jsx"]
+# Components to extract content from (MODIFY THIS TO PRINT DIFFERENT COMPONENTS)
+SPECIFIC_COMPONENTS = [
+    "App.jsx",
+    "Dashboard.jsx",
+    "ArtistProfile.jsx",
+    "Recommendations.jsx",
+    "package.json",
+    "server.js",
+    "artistRoutes.js",
+    "artistController.js",
+]
 
 # Always include these files
 INCLUDE_ALWAYS = ["package.json", "index.html"]
@@ -106,7 +113,6 @@ def generate_tree_structure(root_dir, output_file):
                     file_content_output.append(f"## {file}\n")
                     file_content_output.append(f"Path: `{relative_path}`\n\n")
                     file_content_output.append(f"```{language}\n{content}\n```\n")
-                    file_content_output.append("\n" + "-" * 40 + "\n")
 
     # Write everything to the output markdown file
     with open(output_file, "w") as f:
