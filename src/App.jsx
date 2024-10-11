@@ -1,11 +1,8 @@
-import './App.css'
-import TailwindTestComponent from './TailwindTestComponent'
-
+import "./App.css";
+import TailwindTestComponent from "./TailwindTestComponent";
 
 function App() {
-  return (
-    <TailwindTestComponent />
-  )
+  return <TailwindTestComponent />;
 }
 
-export default App
+export default App;
