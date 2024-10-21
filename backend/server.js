@@ -1,27 +1,31 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import artistRoutes from "./routes/artistRoutes.js";
 
+// Load environment variables from .env file
+dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5001;
 
-// Enable CORS to allow requests from the frontend (localhost:5173)
+// Enable CORS to allow requests from the frontend (configured via .env)
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow requests from your frontend
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
   })
 );
 
 app.use(express.json());
 
-// Routes
-
+// Base route for checking server connection
 app.get("/", (req, res) => {
   res.send("Welcome to the website connection API");
 });
 
-import artistRoutes from "./routes/artistRoutes.js";
+// Artist API routes
 app.use("/api/artists", artistRoutes);
 
+// Start the server
+const PORT = process.env.PORT || 5001; // Fallback to 5001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
