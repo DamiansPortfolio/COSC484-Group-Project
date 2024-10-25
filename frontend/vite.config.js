@@ -1,12 +1,12 @@
-import path from "path";
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
-import dotenv from "dotenv";
+import path from "path"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+import dotenv from "dotenv"
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config()
 
-const backendPort = process.env.PORT || 5001; // Default to 5001 if PORT is not set
+const backendPort = process.env.PORT || 5001 // Default to 5001 if PORT is not set
 
 export default defineConfig({
   plugins: [react()],
@@ -16,13 +16,13 @@ export default defineConfig({
       "/api": {
         target: `http://localhost:${backendPort}`, // Use the PORT from .env
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, "/api"),
+        rewrite: (path) => path.replace(/^\/api/, "/api"), // This line is optional
       },
     },
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./src"), // Alias for easier imports
     },
   },
-});
+})
