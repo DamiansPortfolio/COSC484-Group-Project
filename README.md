@@ -57,92 +57,132 @@ The platform allows requesters to post creative project listings and artists to 
 
 ## 3. Tech Stack
 
-- **Frontend:** Vite + React
-- **Styling:** Tailwind CSS
-- **UI Components:** ShadCN
-- **Backend:** (To be decided)
-- **Database:** (MongoDB)
-- **Authentication:** (To be decided)
+***Current Implementation:***
 
+**Frontend**
+   - Framework: Vite + React (Fast development and build tool for modern web projects)
+   - Styling: Tailwind CSS (Utility-first CSS framework for rapid UI development)
+   - UI Components: shadcn/ui (Pre-built, customizable React components)
+   
+**Backend**
+   - Server Framework: Express.js (Minimal and flexible Node.js web application framework)
+   - Runtime Environment: Node.js (JavaScript runtime for server-side development)
+   - Database: MongoDB (NoSQL database for storing and managing data)
+   - Version Control Repository Hosting: Git + GitHub (Version control system for collaboration and code management)
+
+***Future Implementation***
+   - API Handling: Axios (Promise-based HTTP client for making requests to the backend)
+   - User Authentication: JWT (JSON Web Tokens) (For secure user authentication and authorization) 
+   - Deployment: Hosting Platform: AWS (Amazon Web Services) (Scalable cloud computing services)
+   - File Storage: AWS S3 (Secure and scalable cloud storage for media, documents, etc.) 
+   - Email Services Options Under Consideration: SendGrid or Nodemailer (For handling email notifications such as user registration, password resets, etc.)
+   - State Management: Global State Management: Redux (Centralized state container for JavaScript apps)
 
 ## 4. Getting Started
 
 ### 4.1 Prerequisites
 
-- **Node.js**: v16.x or higher
-- **npm**: Comes with Node.js
-- **Git**: Latest version for version control
+Before setting up the project, ensure the following prerequisites are installed:
 
-### 4.2 Installation
+- **Node.js**: v16.x or higher  
+   - [Install Node.js](https://nodejs.org/en/) if not already installed (comes with npm).
+- **npm**: Comes with Node.js. Make sure you are using a recent version.
+  You can run the following command in your terminal window to check the version of npm
+  ```bash
+  npm --version
+  ```
+- **Git**: Latest version for version control  
+   - [Install Git](https://git-scm.com/downloads) if not already installed.
+     
+- **MongoDB**: Install MongoDB Community Edition for local development  
+   - [Install MongoDB](https://docs.mongodb.com/manual/installation/) based on your operating system.
+     
+Additional tools that may improve your development experience:
+- **VS Code**: Recommended code editor  
+   - [Download VS Code](https://code.visualstudio.com/)
 
-#### macOS
+## 4.2 Installation
 
-1.  **Install Node.js and npm**  
+Follow these steps to set up the project on your local machine:
+
+1. **Install Node.js and npm**  
+   Use Homebrew to install Node.js:
    ```bash
    brew install node
    ```
-   Alternatively:
-   Download the latest stable version of [Node.js](https://nodejs.org/en/) which includes npm.
-
-
-2. **Clone the repository**  
-   Open your terminal and run:
+   Alternatively, download the latest stable version from the [Node.js official website](https://nodejs.org/en/).
+2. **Install MongoDB**  
+   Use npm to install MongoDB from the root folder of the project:
+   ```
+   npm install mongodb
+   ```
+3. **Clone The Repository**
+   Beofore running this command, make sure to change your directory to the folder you want the project to be cloned to.
+   For example, /Users/user/Desktop/project-folder
    ```bash
    git clone https://github.com/DamiansPortfolio/COSC484-Group-Project.git
    cd COSC484-Group-Project
    ```
-   Or if you are using SSH:
+4. **Configure .env variables
+   **THIS STEP IS CRUTIAL TO GET THE PROJECT UP AND RUNNING ON YOUR LOCAL MACHINE**
+   Create a .env file in the root directory based on the provided .env.example. Update the variables as necessary.
+   Example path: ```/COSC-484/group-project-main-folder/```
+   You can see your current path with this command:
    ```bash
-   git clone git@github.com:DamiansPortfolio/COSC484-Group-Project.git
-   cd COSC484-Group-Project
+   pwd
    ```
-
-3. **Install dependencies** (important)
-   Inside the project directory, install the necessary packages:
+   After you make sure youre in the project root folder, you can create a new file called .env (exactly as typed here).
+   If you want to run this command on mac you can run the following command:
+   ```bash
+   touch .env
+   ```
+5. **Install dependencies**
+   In the project root directory make sure to install all dependencies via
    ```bash
    npm install
    ```
+   or
+   ```bash
+   npm ci
+   ```
+   Subsequently you must also do this inside of the frontend and backend folders.
 
-4. **Run the development server**  
-   Start the development server:
+6. **Starting the project**
+   **REMEMBER TO OPEN TWO TERMINAL WINDOWS FOR EACH FRONTEND AND BACKEND**
+   
+   Start the frontend client
+   **IMPORTANT**: Navigate to the /frontend folder:
    ```bash
    npm run dev
    ```
 
-   This will open the application at `http://localhost:3000` by default.
-
-#### Windows
-
-1. **Install Node.js and npm**  
-   Download and install the latest stable version of Node.js from the [official website](https://nodejs.org/en/).
-
-2. **Clone the repository**  
-   Open Git Bash or your preferred terminal and run:
+   Start the backend server
+   **IMPORTANT**: Navigate to the /backend folder:
    ```bash
-   git clone https://github.com/DamiansPortfolio/COSC484-Group-Project.git
-   cd COSC484-Group-Project
+   npm run start
    ```
+**IF EVERYTHING IS WORKING AS EXPECTED THIS IS THE OUTPUT YOU SHOULD SEE IN YOUR TERMINAL WINDOWS**
+**Frontend Terminal Window**
+```bash
 
-3. **Install dependencies**  
-   Inside the project directory, install the necessary packages:
-   ```bash
-   npm install
-   ```
+> cosc484-group-project@0.0.0 dev
+> vite
 
-4. **Run the development server**  
-   Start the development server:
-   ```bash
-   npm run dev
-   ```
+  VITE v5.4.7  ready in 537 ms
 
-   This will open the application at `http://localhost:3000` by default.
+  ➜  Local:   http://localhost:(ip_address_goes_here)/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+**Backend Terminal Window**
+```bash
 
-### Useful npm Commands
+> backend@1.0.0 start
+> node server.js
 
-- `npm run dev` - Starts the development server
-- ~~`npm run build` - Builds the project for production~~ (*not implemented*)
-- ~~`npm run lint` - Lints the codebase for issues~~ (*not implemented*)
-
+Server running on port (port_number_here)
+Connected to MongoDB at (timestamp)
+```
 
 ## 5. Implementation Checklist
 
