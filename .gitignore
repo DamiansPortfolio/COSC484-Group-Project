@@ -26,4 +26,4 @@ dist-ssr
 
 # In future we will add these .env files to ignore, but for initial setup 
 # we will keep them in.
-# .env
+.env
