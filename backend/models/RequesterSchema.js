@@ -25,10 +25,10 @@ const requesterProfileSchema = new mongoose.Schema({
 })
 
 // Create the RequesterProfile model
-const RequesterProfile = mongoose.model(
+const Requester = mongoose.model(
   "RequesterProfile",
   requesterProfileSchema,
   "requester_profiles" // Use a custom collection name if desired
 )
 
-export default RequesterProfile
+export default Requester

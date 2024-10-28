@@ -1,7 +1,8 @@
-import bcrypt from "bcrypt"
 import User from "../models/User.js"
 import ArtistProfile from "../models/ArtistSchema.js"
 import RequesterProfile from "../models/RequesterSchema.js"
+
+import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
 // Create a new user and associated profiles based on the role

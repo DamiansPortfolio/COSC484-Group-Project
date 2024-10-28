@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom" // Add this import
 import { registerUser } from "../redux/actions/userActions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,8 +20,15 @@ function UserCreationPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [role, setRole] = useState("requester") // Default role
+  const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { loading, error } = useSelector((state) => state.user) // Access loading and error from Redux state
+  const { loading, error, user } = useSelector((state) => state.user) // Access loading and error from Redux state
+
+  React.useEffect(() => {
+    if (user) {
+      navigate("/")
+    }
+  }, [user, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()

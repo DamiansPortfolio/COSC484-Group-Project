@@ -5,6 +5,7 @@ import { connectToDatabase } from "./db.js" // Database connection function
 import userRoutes from "./routes/userRoutes.js"
 import artistRoutes from "./routes/artistRoutes.js"
 import requesterRoutes from "./routes/requesterRoutes.js"
+import jobRoutes from "./routes/jobsRoutes.js"
 
 dotenv.config({ path: "../.env" }) // Load .env variables
 
@@ -26,6 +27,7 @@ const configureRoutes = () => {
   app.use("/api/users", userRoutes) // Base route for user operations
   app.use("/api/artists", artistRoutes) // Base route for artist profile operations
   app.use("/api/requesters", requesterRoutes) // Base route for requester profile operations
+  app.use("/api/jobs", jobRoutes)
 }
 
 // Start the server
