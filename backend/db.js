@@ -1,27 +1,16 @@
-import { MongoClient } from "mongodb"
-import { mongoUri, usersDB } from "./config.js" // Import usersDB
+import mongoose from "mongoose" // MongoDB ODM for Node.js
 
-let dbClient
-let db
-
+// MongoDB connection function
 const connectToDatabase = async () => {
-  if (!db) {
-    try {
-      dbClient = new MongoClient(mongoUri)
-      await dbClient.connect()
-      db = dbClient.db(usersDB) // Specify the userData database here
-      console.log("Connected to MongoDB at", new Date().toISOString())
-    } catch (error) {
-      console.error("Failed to connect to MongoDB:", error)
-      throw error
-    }
-  } else {
-    console.log(
-      "Using existing MongoDB connection at",
-      new Date().toISOString()
-    )
+  try {
+    // Connect to MongoDB with connection options
+    await mongoose.connect(process.env.MONGODB_URI)
+    console.log("Successfully connected to MongoDB")
+  } catch (err) {
+    console.error("Error connecting to MongoDB:", err)
+    // Optionally, rethrow the error to let the caller handle it
+    throw err
   }
-  return db // Return the database instance
 }
 
 export { connectToDatabase }

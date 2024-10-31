@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -11,39 +12,52 @@ import { Link } from "react-router-dom"
 
 const Recommendations = () => {
   const [artists, setArtists] = useState([])
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedSkill, setSelectedSkill] = useState("")
   const [sortOption, setSortOption] = useState("")
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchArtists = async () => {
       setLoading(true) // Set loading to true
       try {
-        let url = `http://localhost:5001/api/artists?`
+        const artistsResponse = await fetch(
+          "http://localhost:5001/api/artists/"
+        )
+        if (!artistsResponse.ok) {
+          throw new Error(
+            `Error fetching artists: ${artistsResponse.statusText}`
+          )
+        }
+        const artistsData = await artistsResponse.json()
 
-        if (selectedSkill) {
-          url += `skill=${selectedSkill}&`
+        // Fetch users
+        const usersResponse = await fetch("http://localhost:5001/api/users/")
+        if (!usersResponse.ok) {
+          throw new Error(`Error fetching users: ${usersResponse.statusText}`)
         }
-        if (sortOption) {
-          url += `sort=${sortOption}`
-        }
+        const usersData = await usersResponse.json()
 
-        const response = await fetch(url)
-        if (!response.ok) {
-          throw new Error(`Error fetching artists: ${response.statusText}`)
-        }
-        const data = await response.json()
-        console.log(data)
-        setArtists(data)
+        // Map artists to include user information
+        const enrichedArtists = artistsData.map((artist) => {
+          const user = usersData.find((user) => user._id === artist.userId)
+          return {
+            ...artist,
+            name: user ? user.name : "Unknown Artist",
+            username: user ? user.username : "Unknown",
+          }
+        })
+
+        setArtists(enrichedArtists)
       } catch (error) {
-        console.error("Failed to fetch artists:", error)
+        console.error("Failed to fetch artists or users:", error)
       } finally {
         setLoading(false) // Set loading to false
       }
     }
 
     fetchArtists()
-  }, [selectedSkill, sortOption])
+  }, [])
 
   if (loading) {
     return <p>Loading artists...</p> // Show loading message
@@ -104,28 +118,37 @@ const Recommendations = () => {
         {/* Scrollable area for artist cards */}
         <ScrollArea className='h-80'>
           <CardContent className='grid grid-cols-2 gap-4'>
-            {artists.map((artist) => (
-              <Card key={artist._id}>
-                {" "}
-                {/* Use _id for MongoDB */}
-                <CardContent className='p-4'>
-                  <h3 className='font-semibold mb-2'>
-                    <Link to={`/profile/${artist._id}`}>
-                      {" "}
-                      {/* Use _id for profile link */}
-                      {artist.name}
-                    </Link>
-                  </h3>
-                  <p className='text-sm text-gray-600'>
-                    {artist.skills.join(", ")}
-                  </p>
-                  {/* Show artist rating */}
-                  <p className='text-sm text-yellow-500'>
-                    Rating: {artist.rating} ★
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {artists
+              .filter((artist) =>
+                selectedSkill ? artist.skills.includes(selectedSkill) : true
+              ) // Filter by skill
+              .sort((a, b) => {
+                if (sortOption === "name") {
+                  return a.name.localeCompare(b.name)
+                } else if (sortOption === "rating") {
+                  return b.averageRating - a.averageRating // Higher ratings first
+                }
+                return 0
+              })
+              .map((artist) => (
+                <Card key={artist._id}>
+                  <CardContent className='p-4'>
+                    <h3 className='font-semibold mb-2'>
+                      <Link to={`/profile/${artist.userId}`}>
+                        {" "}
+                        {/* Updated to use artist.userId */}
+                        {artist.name} {/* Display artist name */}
+                      </Link>
+                    </h3>
+                    <p className='text-sm text-gray-600'>
+                      {artist.skills.join(", ")}
+                    </p>
+                    <p className='text-sm text-yellow-500'>
+                      Rating: {artist.averageRating} ★
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
           </CardContent>
         </ScrollArea>
       </CardContent>

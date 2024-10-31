@@ -1,46 +1,59 @@
-import dotenv from "dotenv"
-import express from "express"
-import cors from "cors"
+import dotenv from "dotenv" // Load environment variables
+import express from "express" // Web framework for Node.js
+import cors from "cors" // Middleware for CORS
+import { connectToDatabase } from "./db.js" // Database connection function
+import userRoutes from "./routes/userRoutes.js"
 import artistRoutes from "./routes/artistRoutes.js"
-import { connectToDatabase } from "./db.js" // Import the connect function
+import requesterRoutes from "./routes/requesterRoutes.js"
+import jobRoutes from "./routes/jobsRoutes.js"
 
-// Load environment variables from .env file
-dotenv.config({ path: "../.env" })
+dotenv.config({ path: "../.env" }) // Load .env variables
+
+// Create an Express application
 const app = express()
 
-// Enable CORS to allow requests from the frontend (configured via .env)
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  })
-)
+// Middleware configuration
+const configureMiddleware = () => {
+  // Configure CORS
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"
+  app.use(cors({ origin: frontendUrl }))
 
-app.use(express.json())
+  app.use(express.json()) // Parse incoming JSON requests
+}
 
-// Connect to MongoDB
-const connectDatabase = async () => {
+// Route definitions
+const configureRoutes = () => {
+  app.get("/", (req, res) => res.send("Welcome to the website connection API"))
+  app.use("/api/users", userRoutes) // Base route for user operations
+  app.use("/api/artists", artistRoutes) // Base route for artist profile operations
+  app.use("/api/requesters", requesterRoutes) // Base route for requester profile operations
+  app.use("/api/jobs", jobRoutes)
+}
+
+// Start the server
+const startServer = async () => {
   try {
-    await connectToDatabase() // from db.js
-    // Remove this log to avoid duplication
+    await connectToDatabase() // Connect to MongoDB
+    configureMiddleware() // Configure app middleware
+    configureRoutes() // Configure app routes
+
+    const PORT = process.env.PORT || 5001
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
   } catch (err) {
-    console.error("Failed to connect to MongoDB:", err)
-    process.exit(1) // Exit process if connection fails
+    console.error("Failed to start server:", err)
+    process.exit(1)
   }
 }
 
-// Call the database connection function once at startup
-connectDatabase()
-
-// Base route for checking server connection
-app.get("/", (req, res) => {
-  res.send("Welcome to the website connection API")
+// Global error handling for uncaught exceptions and rejections
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err)
+  process.exit(1)
 })
 
-// Artist API routes
-app.use("/api/artists", artistRoutes)
-
-// Start the server
-const PORT = process.env.PORT || 5001 // Fallback to 5001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err)
+  process.exit(1)
 })
+
+startServer() // Start the server

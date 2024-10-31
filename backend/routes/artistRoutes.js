@@ -1,10 +1,19 @@
 import express from "express"
-import { getArtists, getArtistById } from "../controllers/artistController.js"
+import {
+  getAllArtists,
+  getArtistProfile,
+  updateArtistProfile,
+} from "../controllers/artistProfileController.js"
 
 const router = express.Router()
 
-// Artist API routes
-router.get("/", getArtists)
-router.get("/:id", getArtistById)
+// Get route for retrieving all artists
+router.get("/", getAllArtists)
+
+// GET route for retrieving artist profile by user ID
+router.get("/:userId", getArtistProfile)
+
+// PUT route for updating artist profile by user ID
+router.put("/:userId", updateArtistProfile)
 
 export default router
