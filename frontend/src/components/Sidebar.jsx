@@ -7,20 +7,33 @@ import {
   FileText,
   MessageSquare,
   Star,
+  User, // Add User icon for profile
 } from "lucide-react"
 import { Menu, X } from "lucide-react"
-import { useLocation } from "react-router-dom"
+import { useLocation, Link } from "react-router-dom"
 
 const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
   const location = useLocation()
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { name: "Job Listings", icon: Briefcase, path: "/" },
-    { name: "My Applications", icon: FileText, path: "/" },
-    { name: "Messages", icon: MessageSquare, path: "/" },
-    { name: "Reviews", icon: Star, path: "/" },
+    { name: "Job Listings", icon: Briefcase, path: "/jobs" },
+    { name: "My Applications", icon: FileText, path: "/applications" },
+    { name: "Messages", icon: MessageSquare, path: "/messages" },
+    { name: "Reviews", icon: Star, path: "/reviews" },
+    // Add more menu items here as needed
+    // { name: "Projects", icon: FolderIcon, path: "/projects" },
+    // { name: "Notifications", icon: BellIcon, path: "/notifications" },
+    // { name: "Settings", icon: SettingsIcon, path: "/settings" },
   ]
+
+  // Helper function to check if a path is active
+  const isActivePath = (path) => {
+    if (path === "/") {
+      return location.pathname === "/"
+    }
+    return location.pathname.startsWith(path)
+  }
 
   return (
     <aside
@@ -50,48 +63,48 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
 
           {menuItems.map((item) => (
             <li key={item.name}>
-              <Button
-                variant={
-                  location.pathname === item.path ? "secondary" : "ghost"
-                }
-                className={`
-                  w-full 
-                  h-10 
-                  relative 
-                  ${location.pathname === item.path ? "bg-gray-100" : ""}
-                  hover:bg-gray-100
-                `}
-              >
-                <span
+              <Link to={item.path}>
+                <Button
+                  variant={isActivePath(item.path) ? "secondary" : "ghost"}
                   className={`
-                    absolute 
-                    inset-0 
-                    flex 
-                    items-center 
-                    justify-center 
-                    transition-opacity 
-                    duration-300 
-                    ${sidebarOpen ? "opacity-0" : "opacity-100"}
+                    w-full 
+                    h-10 
+                    relative 
+                    ${isActivePath(item.path) ? "bg-gray-100" : ""}
+                    hover:bg-gray-100
                   `}
                 >
-                  <item.icon size={24} />
-                </span>
-                <span
-                  className={`
-                    absolute 
-                    inset-0 
-                    flex 
-                    items-center 
-                    pl-4 
-                    transition-opacity 
-                    duration-300 
-                    ${sidebarOpen ? "opacity-100" : "opacity-0"}
-                  `}
-                >
-                  <item.icon size={24} className='mr-2' />
-                  {item.name}
-                </span>
-              </Button>
+                  <span
+                    className={`
+                      absolute 
+                      inset-0 
+                      flex 
+                      items-center 
+                      justify-center 
+                      transition-opacity 
+                      duration-300 
+                      ${sidebarOpen ? "opacity-0" : "opacity-100"}
+                    `}
+                  >
+                    <item.icon size={24} />
+                  </span>
+                  <span
+                    className={`
+                      absolute 
+                      inset-0 
+                      flex 
+                      items-center 
+                      pl-4 
+                      transition-opacity 
+                      duration-300 
+                      ${sidebarOpen ? "opacity-100" : "opacity-0"}
+                    `}
+                  >
+                    <item.icon size={24} className='mr-2' />
+                    {item.name}
+                  </span>
+                </Button>
+              </Link>
             </li>
           ))}
         </ul>
