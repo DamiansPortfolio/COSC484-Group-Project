@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for backend API
+
+Resources:
+  BackendApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+      Environment:
+        Variables:
+          NODE_ENV: "production"
+          MONGODB_URI: !Sub "${MONGODB_URI}"
+          DB_USERS: "user_management"
+          JWT_SECRET: !Sub "${JWT_SECRET}"
+          FRONTEND_URL: "your-amplify-domain-here"
