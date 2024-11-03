@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs" // Use bcryptjs
 
 // In your User model (User.js)
 const userSchema = new mongoose.Schema(
@@ -27,7 +27,7 @@ userSchema.virtual("password").set(function (password) {
 userSchema.pre("save", async function (next) {
   if (this._password) {
     const saltRounds = 10
-    this.passwordHash = await bcrypt.hash(this._password, saltRounds)
+    this.passwordHash = await bcrypt.hash(this._password, saltRounds) // This remains unchanged
   }
   next()
 })

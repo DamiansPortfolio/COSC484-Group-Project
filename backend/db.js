@@ -1,10 +1,10 @@
-import mongoose from "mongoose" // MongoDB ODM for Node.js
+import mongoose from "mongoose"
+import { config } from "./config.js"
 
-// MongoDB connection function
-const connectToDatabase = async () => {
+export const connectToDatabase = async () => {
   try {
     console.log("Attempting to connect to MongoDB...")
-    const conn = await mongoose.connect(process.env.MONGODB_URI)
+    const conn = await mongoose.connect(config.MONGODB_URI)
     console.log(`MongoDB Connected: ${conn.connection.host}`)
     return conn
   } catch (error) {
@@ -12,5 +12,3 @@ const connectToDatabase = async () => {
     throw error
   }
 }
-
-export default connectToDatabase

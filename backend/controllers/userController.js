@@ -2,7 +2,7 @@ import User from "../models/User.js"
 import ArtistProfile from "../models/ArtistSchema.js"
 import RequesterProfile from "../models/RequesterSchema.js"
 
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs" // Use bcryptjs
 import jwt from "jsonwebtoken"
 
 // Create a new user and associated profiles based on the role
@@ -132,6 +132,7 @@ export const deleteUser = async (req, res) => {
 }
 
 // Login user
+// Login user
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body
@@ -143,7 +144,7 @@ export const loginUser = async (req, res) => {
     }
 
     // Compare password
-    const isMatch = await bcrypt.compare(password, user.passwordHash)
+    const isMatch = await bcrypt.compare(password, user.passwordHash) // This remains unchanged
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid password." })
     }
