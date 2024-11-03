@@ -34,7 +34,9 @@ const ArtistProfile = () => {
   useEffect(() => {
     const fetchArtistData = async () => {
       try {
-        const artistResponse = await fetch(`/api/artists/${id}`)
+        const artistResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/artists/${id}`
+        )
         if (!artistResponse.ok) {
           throw new Error("Artist not found")
         }

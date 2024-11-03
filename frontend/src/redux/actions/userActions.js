@@ -14,11 +14,14 @@ export const registerUser = (userData) => {
     dispatch({ type: USER_REGISTER_REQUEST })
     console.log("Registering user with data:", userData)
     try {
-      const response = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      })
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        }
+      )
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -45,11 +48,14 @@ export const loginUser = (userData) => {
     dispatch({ type: USER_LOGIN_REQUEST })
     console.log("Logging in user with data:", userData)
     try {
-      const response = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      })
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        }
+      )
 
       if (!response.ok) {
         const errorData = await response.json()

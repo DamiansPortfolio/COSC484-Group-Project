@@ -3,8 +3,10 @@ export const fetchRecommendations = () => {
     dispatch({ type: "FETCH_RECOMMENDATIONS_REQUEST" })
 
     try {
-      const artistsResponse = await fetch("http://localhost:5001/api/artists/")
-      const usersResponse = await fetch("http://localhost:5001/api/users/")
+      const artistsResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/artists`
+      )
+      const usersResponse = await fetch(`${import.meta.env.VITE_API_URL}/users`)
 
       if (!artistsResponse.ok || !usersResponse.ok) {
         throw new Error("Failed to fetch data")
