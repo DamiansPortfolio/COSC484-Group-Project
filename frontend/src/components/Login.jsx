@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert } from "@/components/ui/alert" // Import Alert if you have it set up
+import { Alert } from "@/components/ui/alert"
 
 const Login = () => {
   const [username, setUsername] = useState("")
@@ -13,60 +13,57 @@ const Login = () => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading, error, user } = useSelector((state) => state.user) // Get user state
+  const { loading, error, user } = useSelector((state) => state.user)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Logging in with:", { username, password }) // Log the input for debugging
-    await dispatch(loginUser({ username, password })) // Wait for the login action to complete
+    console.log("Logging in with:", { username, password })
+    await dispatch(loginUser({ username, password }))
   }
 
-  // Navigate to the home page if the user is authenticated and there is no error
   useEffect(() => {
     if (user && !error) {
-      navigate("/") // Navigate to the home page after a successful login
+      navigate("/")
     }
-  }, [user, error, navigate]) // Run useEffect when user or error changes
+  }, [user, error, navigate])
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-      <Card className='w-full max-w-md p-6'>
+    <div className='flex justify-center py-8'>
+      <Card className='w-full max-w-md'>
         <CardHeader>
           <CardTitle className='text-center text-2xl font-bold'>
             Login
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className='flex flex-col'>
-            <Input
-              type='text'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder='Username'
-              required
-              className='mb-4'
-            />
-            <Input
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder='Password'
-              required
-              className='mb-4'
-            />
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div>
+              <Input
+                type='text'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder='Username'
+                required
+              />
+            </div>
+            <div>
+              <Input
+                type='password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder='Password'
+                required
+              />
+            </div>
             <Button
               type='submit'
               disabled={loading}
-              className='bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
+              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
+            {error && <Alert variant='destructive'>{error}</Alert>}
           </form>
-          {error && (
-            <Alert className='mt-4' type='error'>
-              {error}
-            </Alert>
-          )}
         </CardContent>
       </Card>
     </div>
