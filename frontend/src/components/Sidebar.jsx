@@ -16,10 +16,10 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/" },
-    { name: "Job Listings", icon: Briefcase, path: "/" }, // Temporarily point to home
-    { name: "My Applications", icon: FileText, path: "/" }, // Temporarily point to home
-    { name: "Messages", icon: MessageSquare, path: "/" }, // Temporarily point to home
-    { name: "Reviews", icon: Star, path: "/" }, // Temporarily point to home
+    { name: "Job Listings", icon: Briefcase, path: "/" },
+    { name: "My Applications", icon: FileText, path: "/" },
+    { name: "Messages", icon: MessageSquare, path: "/" },
+    { name: "Reviews", icon: Star, path: "/" },
   ]
 
   return (
@@ -27,12 +27,12 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
       className={`
         bg-white 
         shadow-lg
-        min-h-screen
-        fixed 
-        left-0 
-        top-[64px]
+        h-[calc(100vh-64px)] 
+        sticky
+        top-16
         transition-all 
         duration-300 
+        overflow-y-auto
         ${sidebarOpen ? "w-64" : "w-16"}
       `}
     >
