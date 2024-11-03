@@ -1,29 +1,15 @@
-import React, { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import PageHeader from "../components/PageHeader"
-import Sidebar from "../components/Sidebar"
+// pages/Dashboard.js
+import React from "react"
 import QuickStats from "../components/dashboard/QuickStats"
 import RecentActivity from "../components/dashboard/RecentActivity"
 import Recommendations from "../components/dashboard/Recommendations"
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
-
   return (
-    <div className='min-h-screen bg-gray-100 flex flex-col'>
-      <PageHeader />
-      <div className='flex flex-1'>
-        <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-        <main className='flex-1 p-8 overflow-auto'>
-          {/* Removed Welcome message */}
-          <QuickStats />
-          <RecentActivity />
-          <Recommendations />
-        </main>
-      </div>
+    <div className='space-y-6'>
+      <QuickStats />
+      <RecentActivity />
+      <Recommendations />
     </div>
   )
 }
