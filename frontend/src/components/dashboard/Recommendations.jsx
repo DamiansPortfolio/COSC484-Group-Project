@@ -1,3 +1,4 @@
+// components/dashboard/Recommendations.js
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
@@ -19,6 +20,40 @@ import {
   DropdownMenuItem,
 } from "../../components/ui/dropdown-menu"
 import { Link } from "react-router-dom"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const ArtistCard = ({ artist }) => (
+  <Card key={artist._id}>
+    <CardContent className='p-4'>
+      <h3 className='font-semibold mb-2'>
+        <Link to={`/profile/${artist.userId._id}`}>
+          {artist.userId?.name || "Unknown Artist"}
+        </Link>
+      </h3>
+      <p className='text-sm text-gray-600'>{artist.skills.join(", ")}</p>
+      <p className='text-sm text-yellow-500'>
+        Rating: {artist.averageRating.toFixed(1)} ★
+      </p>
+      {artist.location && (
+        <p className='text-sm text-gray-500'>{artist.userId.location}</p>
+      )}
+    </CardContent>
+  </Card>
+)
+
+const LoadingSkeleton = () => (
+  <div className='grid grid-cols-2 gap-4'>
+    {[1, 2, 3, 4].map((n) => (
+      <Card key={n}>
+        <CardContent className='p-4'>
+          <Skeleton className='h-6 w-3/4 mb-2' />
+          <Skeleton className='h-4 w-1/2 mb-2' />
+          <Skeleton className='h-4 w-1/4' />
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+)
 
 const Recommendations = () => {
   const dispatch = useDispatch()
@@ -31,7 +66,16 @@ const Recommendations = () => {
   }, [dispatch])
 
   if (loading) {
-    return <p>Loading artists...</p>
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommended for You</CardTitle>
+        </CardHeader>
+        <CardContent className='mb-4'>
+          <LoadingSkeleton />
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -50,12 +94,17 @@ const Recommendations = () => {
               <DropdownMenuItem onClick={() => dispatch(setSelectedSkill(""))}>
                 All Skills
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => dispatch(setSelectedSkill("3D Modeling"))}
-              >
-                3D Modeling
-              </DropdownMenuItem>
-              {/* ... other skill options ... */}
+              {/* Dynamically generate skill options from all available skills */}
+              {[...new Set(artists.flatMap((artist) => artist.skills))].map(
+                (skill) => (
+                  <DropdownMenuItem
+                    key={skill}
+                    onClick={() => dispatch(setSelectedSkill(skill))}
+                  >
+                    {skill}
+                  </DropdownMenuItem>
+                )
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -83,28 +132,18 @@ const Recommendations = () => {
                 selectedSkill ? artist.skills.includes(selectedSkill) : true
               )
               .sort((a, b) => {
-                if (sortOption === "name") return a.name.localeCompare(b.name)
-                if (sortOption === "rating")
+                if (sortOption === "name") {
+                  return (a.userId?.name || "").localeCompare(
+                    b.userId?.name || ""
+                  )
+                }
+                if (sortOption === "rating") {
                   return b.averageRating - a.averageRating
+                }
                 return 0
               })
               .map((artist) => (
-                <Card key={artist._id}>
-                  <CardContent className='p-4'>
-                    <h3 className='font-semibold mb-2'>
-                      <Link to={`/profile/${artist.userId}`}>
-                        {" "}
-                        {artist.name}
-                      </Link>
-                    </h3>
-                    <p className='text-sm text-gray-600'>
-                      {artist.skills.join(", ")}
-                    </p>
-                    <p className='text-sm text-yellow-500'>
-                      Rating: {artist.averageRating} ★
-                    </p>
-                  </CardContent>
-                </Card>
+                <ArtistCard key={artist._id} artist={artist} />
               ))}
           </CardContent>
         </ScrollArea>
