@@ -30,7 +30,7 @@ export const createUser = async (req, res) => {
       const artistProfile = new ArtistProfile({
         userId: user._id,
         portfolioItems: [],
-        skills: [],
+        skills: skills || [], // Assign skills from the request
         bio: "",
         socialLinks: { website: "", instagram: "" },
         reviews: [],
