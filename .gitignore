@@ -23,7 +23,22 @@ dist-ssr
 *.sln
 *.sw?
 
-
-# In future we will add these .env files to ignore, but for initial setup 
-# we will keep them in.
+# Environment files - now we want to ignore all of them
 .env
+.env.*
+.env.local
+.env.production
+.env.development
+
+# AWS files
+.aws-sam/
+samconfig.toml
+
+# Build directories
+build/
+dist/
+coverage/
+
+# System files
+.DS_Store
+Thumbs.db

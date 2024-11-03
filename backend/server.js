@@ -1,51 +1,76 @@
-import dotenv from "dotenv" // Load environment variables
-import express from "express" // Web framework for Node.js
-import cors from "cors" // Middleware for CORS
-import { connectToDatabase } from "./db.js" // Database connection function
+import dotenv from "dotenv"
+import express from "express"
+import cors from "cors"
+import serverless from "@vendia/serverless-express"
+import { connectToDatabase } from "./db.js"
 import userRoutes from "./routes/userRoutes.js"
 import artistRoutes from "./routes/artistRoutes.js"
 import requesterRoutes from "./routes/requesterRoutes.js"
 import jobRoutes from "./routes/jobsRoutes.js"
 
-dotenv.config({ path: "../.env" }) // Load .env variables
+dotenv.config({ path: "../.env" })
 
-// Create an Express application
 const app = express()
 
 // Middleware configuration
-const configureMiddleware = () => {
-  // Configure CORS
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"
-  app.use(cors({ origin: frontendUrl }))
-
-  app.use(express.json()) // Parse incoming JSON requests
-}
+app.use(
+  cors({
+    origin: [
+      "https://backend-damian.d3kvzqxa3unfxb.amplifyapp.com",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+)
 
 // Route definitions
 const configureRoutes = () => {
   app.get("/", (req, res) => res.send("Welcome to the website connection API"))
-  app.use("/api/users", userRoutes) // Base route for user operations
-  app.use("/api/artists", artistRoutes) // Base route for artist profile operations
-  app.use("/api/requesters", requesterRoutes) // Base route for requester profile operations
+  app.use("/api/users", userRoutes)
+  app.use("/api/artists", artistRoutes)
+  app.use("/api/requesters", requesterRoutes)
   app.use("/api/jobs", jobRoutes)
 }
 
-// Start the server
-const startServer = async () => {
+// Initialize the app
+const initializeApp = async () => {
   try {
-    await connectToDatabase() // Connect to MongoDB
-    configureMiddleware() // Configure app middleware
-    configureRoutes() // Configure app routes
-
-    const PORT = process.env.PORT || 5001
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+    await connectToDatabase()
+    configureMiddleware()
+    configureRoutes()
   } catch (err) {
-    console.error("Failed to start server:", err)
-    process.exit(1)
+    console.error("Failed to initialize app:", err)
+    throw err
   }
 }
 
-// Global error handling for uncaught exceptions and rejections
+// Initialize app and create handler
+let serverlessInstance
+
+export const handler = async (event, context) => {
+  if (!serverlessInstance) {
+    await initializeApp()
+    serverlessInstance = serverless({ app })
+  }
+  return serverlessInstance(event, context)
+}
+
+// Keep the local development server
+if (process.env.NODE_ENV !== "production") {
+  const startLocalServer = async () => {
+    try {
+      await initializeApp()
+      const PORT = process.env.PORT || 5001
+      app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+    } catch (err) {
+      console.error("Failed to start server:", err)
+      process.exit(1)
+    }
+  }
+  startLocalServer()
+}
+
+// Global error handling
 process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err)
   process.exit(1)
@@ -55,5 +80,3 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection:", err)
   process.exit(1)
 })
-
-startServer() // Start the server
