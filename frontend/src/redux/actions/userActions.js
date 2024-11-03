@@ -12,7 +12,6 @@ import {
 export const registerUser = (userData) => {
   return async (dispatch) => {
     dispatch({ type: USER_REGISTER_REQUEST })
-    console.log("Registering user with data:", userData)
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/users/register`,
@@ -30,7 +29,6 @@ export const registerUser = (userData) => {
       }
 
       const data = await response.json()
-      console.log("Registration response data:", data)
       dispatch({ type: USER_REGISTER_SUCCESS, payload: data })
 
       // Automatically log in the user after registration
@@ -46,7 +44,6 @@ export const registerUser = (userData) => {
 export const loginUser = (userData) => {
   return async (dispatch) => {
     dispatch({ type: USER_LOGIN_REQUEST })
-    console.log("Logging in user with data:", userData)
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/users/login`,
@@ -64,10 +61,8 @@ export const loginUser = (userData) => {
       }
 
       const data = await response.json()
-      console.log("Login response data:", data)
 
       const { user, token } = data
-      console.log("Extracted user:", user)
 
       dispatch({ type: USER_LOGIN_SUCCESS, payload: { user, token } })
       localStorage.setItem("user", JSON.stringify(user))

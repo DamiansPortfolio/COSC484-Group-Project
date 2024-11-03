@@ -17,7 +17,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Logging in with:", { username, password })
     await dispatch(loginUser({ username, password }))
   }
 
