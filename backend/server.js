@@ -20,6 +20,7 @@ app.use(
     origin: [
       "https://backend-damian.d3kvzqxa3unfxb.amplifyapp.com",
       "http://localhost:5173",
+      "https://wr7krqz4g5.execute-api.us-east-1.amazonaws.com",
     ],
   })
 )

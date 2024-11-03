@@ -60,11 +60,16 @@ export const createUser = async (req, res) => {
 // Get all users
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-passwordHash") // Exclude passwordHash from response
+    console.log("Attempting to fetch all users...")
+    const users = await User.find().select("-passwordHash")
+    console.log(`Found ${users.length} users`)
     res.status(200).json(users)
   } catch (error) {
     console.error("Error fetching users:", error)
-    res.status(500).json({ message: "Internal server error." })
+    res.status(500).json({
+      message: "Internal server error.",
+      error: error.message, // Add this for debugging
+    })
   }
 }
 
