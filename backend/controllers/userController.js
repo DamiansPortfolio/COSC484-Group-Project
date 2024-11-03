@@ -7,23 +7,35 @@ import jwt from "jsonwebtoken"
 
 // Create a new user and associated profiles based on the role
 export const createUser = async (req, res) => {
+  const requestBody = req.body // Capture the incoming request body
+  console.log("Incoming request body:", requestBody) // Log the incoming request
+
   try {
-    const { username, name, email, password, role } = req.body
+    const { username, name, email, password, role, skills } = requestBody // Include skills from the request body if needed
 
     // Check if all required fields are provided
     if (!username || !name || !email || !password || !role) {
+      console.warn("Validation failed: Missing required fields", {
+        username,
+        name,
+        email,
+        password,
+        role,
+      })
       return res.status(400).json({ message: "All fields are required." })
     }
 
     // Check if the username already exists
     const existingUser = await User.findOne({ username })
     if (existingUser) {
+      console.warn("Username already exists:", { username })
       return res.status(400).json({ message: "Username already exists." })
     }
 
     // Create the user
-    const user = new User({ username, name, email, password, role })
+    const user = new User({ username, name, email, password })
     await user.save()
+    console.log("User created successfully:", { userId: user._id, username })
 
     // Create associated profile based on user role
     if (role === "artist") {
@@ -37,6 +49,9 @@ export const createUser = async (req, res) => {
         averageRating: 0,
       })
       await artistProfile.save()
+      console.log("Artist profile created successfully for user:", {
+        userId: user._id,
+      })
     } else if (role === "requester") {
       const requesterProfile = new RequesterProfile({
         userId: user._id,
@@ -44,6 +59,9 @@ export const createUser = async (req, res) => {
         notifications: [],
       })
       await requesterProfile.save()
+      console.log("Requester profile created successfully for user:", {
+        userId: user._id,
+      })
     }
 
     // Respond with the created user information
@@ -52,7 +70,12 @@ export const createUser = async (req, res) => {
       .status(201)
       .json({ user: userData, message: "User created successfully." })
   } catch (error) {
-    console.error("Error creating user:", error)
+    // Log detailed error information
+    console.error("Error creating user:", {
+      message: error.message,
+      stack: error.stack,
+      requestBody: requestBody, // Log the incoming data for context
+    })
     res.status(500).json({ message: "Internal server error." })
   }
 }
