@@ -13,6 +13,8 @@ dotenv.config({ path: "../.env" })
 const app = express()
 
 // Middleware configuration
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(
   cors({
     origin: [
@@ -35,7 +37,6 @@ const configureRoutes = () => {
 const initializeApp = async () => {
   try {
     await connectToDatabase()
-    configureMiddleware()
     configureRoutes()
   } catch (err) {
     console.error("Failed to initialize app:", err)
@@ -47,35 +48,11 @@ const initializeApp = async () => {
 let serverlessInstance
 
 export const handler = async (event, context) => {
+  context.callbackWaitsForEmptyEventLoop = false // Add this line
+
   if (!serverlessInstance) {
     await initializeApp()
     serverlessInstance = serverless({ app })
   }
   return serverlessInstance(event, context)
 }
-
-// Keep the local development server
-if (process.env.NODE_ENV !== "production") {
-  const startLocalServer = async () => {
-    try {
-      await initializeApp()
-      const PORT = process.env.PORT || 5001
-      app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-    } catch (err) {
-      console.error("Failed to start server:", err)
-      process.exit(1)
-    }
-  }
-  startLocalServer()
-}
-
-// Global error handling
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err)
-  process.exit(1)
-})
-
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err)
-  process.exit(1)
-})
