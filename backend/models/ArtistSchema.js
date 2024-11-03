@@ -73,10 +73,14 @@ const artistSchema = new mongoose.Schema(
       primary: [
         {
           name: String,
-          level: { type: String, enum: ["beginner", "intermediate", "expert"] },
+          level: {
+            type: String,
+            enum: ["beginner", "intermediate", "expert"],
+            default: "beginner",
+          },
         },
       ],
-      secondary: [String],
+      secondary: { type: [String], default: [] }, // Default to an empty array
     },
     experience: [experienceSchema],
     education: [
@@ -87,7 +91,7 @@ const artistSchema = new mongoose.Schema(
         year: Number,
       },
     ],
-    bio: { type: String },
+    bio: { type: String, default: "" },
     socialLinks: {
       website: { type: String },
       instagram: { type: String },
@@ -97,7 +101,11 @@ const artistSchema = new mongoose.Schema(
     },
     professionalInfo: {
       availability: {
-        status: { type: String, enum: ["available", "busy", "not_available"] },
+        status: {
+          type: String,
+          enum: ["available", "busy", "not_available"],
+          default: "available",
+        },
         hoursPerWeek: Number,
         timezone: String,
       },
