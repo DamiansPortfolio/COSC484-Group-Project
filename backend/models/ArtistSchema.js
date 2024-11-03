@@ -1,10 +1,11 @@
 // models/ArtistSchema.js
 import mongoose from "mongoose"
 
+// Schema for individual portfolio items
 const portfolioItemSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
   title: { type: String, required: true },
-  description: { type: String },
+  description: { type: String, default: "" },
   category: {
     type: String,
     enum: [
@@ -15,8 +16,9 @@ const portfolioItemSchema = new mongoose.Schema({
       "Texturing",
       "Other",
     ],
+    default: "Other", // Optional default value
   },
-  tags: [String],
+  tags: { type: [String], default: [] }, // Default to an empty array
   createdAt: { type: Date, default: Date.now },
   featured: { type: Boolean, default: false },
   metadata: {
@@ -25,9 +27,9 @@ const portfolioItemSchema = new mongoose.Schema({
       width: Number,
       height: Number,
     },
-    software: [String], // e.g., ["Blender", "Maya", "ZBrush"]
-    fileSize: Number, // in bytes
-    license: String, // e.g., "Commercial", "Personal"
+    software: { type: [String], default: [] }, // Default to an empty array
+    fileSize: { type: Number, min: 0 }, // Non-negative file size
+    license: String,
   },
   stats: {
     views: { type: Number, default: 0 },
@@ -36,6 +38,7 @@ const portfolioItemSchema = new mongoose.Schema({
   },
 })
 
+// Schema for reviews from requesters
 const reviewFromRequesterSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -46,21 +49,23 @@ const reviewFromRequesterSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Job",
   },
-  rating: { type: Number, required: true },
-  comment: { type: String },
+  rating: { type: Number, required: true, min: 1, max: 5 }, // Enforce rating limits
+  comment: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 })
 
+// Schema for experience entries
 const experienceSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  company: { type: String },
+  company: { type: String, default: "" },
   period: {
     from: { type: Date },
     to: { type: Date },
   },
-  description: { type: String },
+  description: { type: String, default: "" },
 })
 
+// Main artist schema
 const artistSchema = new mongoose.Schema(
   {
     userId: {
@@ -68,11 +73,11 @@ const artistSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    portfolioItems: [portfolioItemSchema],
+    portfolioItems: { type: [portfolioItemSchema], default: [] }, // Ensure default is an empty array
     skills: {
       primary: [
         {
-          name: String,
+          name: { type: String, required: true }, // Ensure name is required
           level: {
             type: String,
             enum: ["beginner", "intermediate", "expert"],
@@ -80,24 +85,24 @@ const artistSchema = new mongoose.Schema(
           },
         },
       ],
-      secondary: { type: [String], default: [] }, // Default to an empty array
+      secondary: { type: [String], default: [] },
     },
-    experience: [experienceSchema],
+    experience: { type: [experienceSchema], default: [] }, // Ensure default is an empty array
     education: [
       {
-        institution: String,
-        degree: String,
-        field: String,
-        year: Number,
+        institution: { type: String, default: "" },
+        degree: { type: String, default: "" },
+        field: { type: String, default: "" },
+        year: { type: Number, min: 1900, max: new Date().getFullYear() }, // Validate year range
       },
     ],
     bio: { type: String, default: "" },
     socialLinks: {
-      website: { type: String },
-      instagram: { type: String },
-      artstation: { type: String },
-      behance: { type: String },
-      linkedin: { type: String },
+      website: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      artstation: { type: String, default: "" },
+      behance: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
     },
     professionalInfo: {
       availability: {
@@ -106,11 +111,11 @@ const artistSchema = new mongoose.Schema(
           enum: ["available", "busy", "not_available"],
           default: "available",
         },
-        hoursPerWeek: Number,
-        timezone: String,
+        hoursPerWeek: { type: Number, min: 0 }, // Non-negative hours
+        timezone: { type: String, default: "" },
       },
       ratePerHour: {
-        amount: Number,
+        amount: { type: Number, min: 0 }, // Non-negative rate
         currency: { type: String, default: "USD" },
       },
       preferredJobTypes: [
@@ -121,7 +126,7 @@ const artistSchema = new mongoose.Schema(
       ],
       languages: [
         {
-          language: String,
+          language: { type: String, required: true }, // Make language required
           proficiency: {
             type: String,
             enum: ["basic", "intermediate", "fluent", "native"],
@@ -130,18 +135,18 @@ const artistSchema = new mongoose.Schema(
       ],
     },
     statistics: {
-      totalProjects: { type: Number, default: 0 },
-      completedProjects: { type: Number, default: 0 },
-      totalEarned: { type: Number, default: 0 },
-      responseRate: { type: Number, default: 0 },
-      onTimeDelivery: { type: Number, default: 0 },
+      totalProjects: { type: Number, default: 0, min: 0 }, // Non-negative projects
+      completedProjects: { type: Number, default: 0, min: 0 },
+      totalEarned: { type: Number, default: 0, min: 0 }, // Non-negative earnings
+      responseRate: { type: Number, default: 0, min: 0, max: 100 }, // Validate response rate
+      onTimeDelivery: { type: Number, default: 0, min: 0, max: 100 }, // Validate on-time delivery
     },
-    reviews: [reviewFromRequesterSchema],
-    averageRating: { type: Number, default: 0 },
+    reviews: { type: [reviewFromRequesterSchema], default: [] }, // Ensure default is an empty array
+    averageRating: { type: Number, default: 0, min: 0, max: 5 }, // Validate average rating
     badges: [
       {
-        name: String,
-        description: String,
+        name: { type: String, required: true },
+        description: { type: String, default: "" },
         awardedAt: { type: Date, default: Date.now },
       },
     ],
@@ -177,5 +182,6 @@ artistSchema.index({
   "professionalInfo.availability.status": 1,
 })
 
+// Create and export the model
 const Artist = mongoose.model("Artist", artistSchema, "artist_profiles")
 export default Artist
