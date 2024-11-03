@@ -3,6 +3,7 @@ import express from "express"
 import {
   getAllJobs,
   getJobById,
+  getJobsByArtist,
   createJob,
   updateJob,
   deleteJob,
@@ -30,5 +31,8 @@ router.put("/:jobId/applications/:applicationId", updateApplication)
 // Milestones
 router.post("/:jobId/milestones", addMilestone)
 router.put("/:jobId/milestones/:milestoneId", updateMilestone)
+
+// Jobs
+router.get("/artist/:artistId", getJobsByArtist)
 
 export default router

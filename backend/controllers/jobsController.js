@@ -239,6 +239,20 @@ export const updateMilestone = async (req, res) => {
   }
 }
 
+export const getJobsByArtist = async (req, res) => {
+  try {
+    const { artistId } = req.params
+
+    const jobs = await Job.find({
+      "applications.artist_id": artistId,
+    })
+
+    res.json(jobs)
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error." })
+  }
+}
+
 export default {
   getAllJobs,
   getJobById,
@@ -250,4 +264,5 @@ export default {
   updateApplication,
   addMilestone,
   updateMilestone,
+  getJobsByArtist,
 }
