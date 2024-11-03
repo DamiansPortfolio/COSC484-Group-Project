@@ -63,5 +63,22 @@ export const handler = async (event, context) => {
     await initializeApp()
     serverlessInstance = serverless({ app })
   }
-  return serverlessInstance(event, context)
+
+  // Call the serverless instance
+  const response = await serverlessInstance(event, context)
+
+  // Ensure CORS headers are added
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*", // You can change this to your specific frontend URL
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  }
+
+  return {
+    ...response,
+    headers: {
+      ...response.headers,
+      ...corsHeaders,
+    },
+  }
 }
