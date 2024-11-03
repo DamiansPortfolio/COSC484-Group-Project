@@ -42,7 +42,10 @@ export const createUser = async (req, res) => {
       const artistProfile = new ArtistProfile({
         userId: user._id,
         portfolioItems: [],
-        skills: skills || [], // Assign skills from the request
+        skills: {
+          primary: skills?.primary || [],
+          secondary: skills?.secondary || [],
+        },
         bio: "",
         socialLinks: { website: "", instagram: "" },
         reviews: [],
