@@ -30,7 +30,11 @@ const ArtistCard = ({ artist }) => (
           {artist.userId?.name || "Unknown Artist"}
         </Link>
       </h3>
-      <p className='text-sm text-gray-600'>{artist.skills.join(", ")}</p>
+      {/* Safely join skills or show 'No skills listed' if empty */}
+      <p className='text-sm text-gray-600'>
+        {(Array.isArray(artist.skills) ? artist.skills : []).join(", ") ||
+          "No skills listed"}
+      </p>
       <p className='text-sm text-yellow-500'>
         Rating: {artist.averageRating.toFixed(1)} ★
       </p>
