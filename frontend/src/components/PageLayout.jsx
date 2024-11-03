@@ -9,11 +9,10 @@ const PageLayout = ({ children }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
   const location = useLocation()
 
-  // Only show sidebar on dashboard
   const showSidebar = location.pathname === "/"
 
   return (
-    <div className='flex flex-col min-h-screen'>
+    <div className='min-h-screen flex flex-col'>
       <PageHeader />
       <div className='flex flex-1'>
         {showSidebar && (
@@ -26,7 +25,6 @@ const PageLayout = ({ children }) => {
             bg-gray-50
             transition-all 
             duration-300 
-            ${showSidebar ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-0"}
           `}
         >
           {children}

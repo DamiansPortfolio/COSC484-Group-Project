@@ -14,7 +14,7 @@ const PageHeader = () => {
   }
 
   return (
-    <header className='bg-white shadow-sm h-16'>
+    <header className='bg-white shadow-sm h-16 sticky top-0 z-50'>
       <div className='h-full px-4 mx-auto flex justify-between items-center'>
         <div className='flex items-center'>
           <img src={logo} alt='Logo' className='h-8 w-auto mr-3' />
