@@ -32,6 +32,14 @@ const configureRoutes = () => {
   app.use("/api/artists", artistRoutes)
   app.use("/api/requesters", requesterRoutes)
   app.use("/api/jobs", jobRoutes)
+  // Add this to your route definitions
+  app.get("/api/test", (req, res) => {
+    res.json({
+      message: "API is working",
+      env: process.env.NODE_ENV,
+      mongoConnected: mongoose.connection.readyState === 1,
+    })
+  })
 }
 
 // Initialize the app
