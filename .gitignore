@@ -30,9 +30,7 @@ dist-ssr
 .env.production
 .env.development
 
-# AWS files
-.aws-sam/
-samconfig.toml
+
 
 # Build directories
 build/
@@ -42,3 +40,8 @@ coverage/
 # System files
 .DS_Store
 Thumbs.db
+
+# AWS files with sensitive info
+template.yaml
+.aws-sam/
+samconfig.toml
