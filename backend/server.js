@@ -19,7 +19,6 @@ app.use(
       "https://backend-damian.d3kvzqxa3unfxb.amplifyapp.com",
       "http://localhost:5173",
     ],
-    credentials: true,
   })
 )
 
