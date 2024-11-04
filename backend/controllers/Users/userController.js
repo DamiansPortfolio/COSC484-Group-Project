@@ -1,6 +1,6 @@
 import User from "../../models/UserModels/UserSchema.js"
-import Artist from "../../models/ArtistModels/ArtistSchema.js"
-import Requester from "../../models/RequesterModels/RequesterSchema.js"
+import ArtistProfile from "../../models/ArtistModels/ArtistSchema.js"
+import RequesterProfile from "../../models/RequesterModels/RequesterSchema.js"
 
 import bcrypt from "bcryptjs" // Use bcryptjs
 import jwt from "jsonwebtoken"
@@ -39,7 +39,7 @@ export const createUser = async (req, res) => {
 
     // Create associated profile based on user role
     if (role === "artist") {
-      const artistProfile = new Artist({
+      const artistProfile = new ArtistProfile({
         userId: user._id,
         portfolioItems: [],
         skills: {
@@ -56,7 +56,7 @@ export const createUser = async (req, res) => {
         userId: user._id,
       })
     } else if (role === "requester") {
-      const requesterProfile = new Requester({
+      const requesterProfile = new RequesterProfile({
         userId: user._id,
         jobsPosted: [],
         notifications: [],
@@ -141,8 +141,8 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const userId = req.params.id
   try {
-    await Artist.deleteOne({ userId })
-    await Requester.deleteOne({ userId })
+    await ArtistProfile.deleteOne({ userId })
+    await RequesterProfile.deleteOne({ userId })
 
     const deletedUser = await User.findByIdAndDelete(userId)
 

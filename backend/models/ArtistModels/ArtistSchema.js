@@ -175,13 +175,6 @@ artistSchema.virtual("totalReviews").get(function () {
   return this.reviews.length
 })
 
-// Add index for search
-artistSchema.index({
-  "skills.primary.name": 1,
-  "skills.secondary": 1,
-  "professionalInfo.availability.status": 1,
-})
-
 // Create and export the model
 const Artist = mongoose.model("Artist", artistSchema, "artist_profiles")
 export default Artist

@@ -26,7 +26,7 @@ function UserCreationPage() {
 
   React.useEffect(() => {
     if (user) {
-      navigate("/")
+      navigate("/dashboard")
     }
   }, [user, navigate])
 
