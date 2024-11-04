@@ -25,11 +25,16 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." })
     }
 
-    // Check if the username already exists
-    const existingUser = await User.findOne({ username })
+    // Check if the username or email already exists
+    const existingUser = await User.findOne({
+      $or: [{ username: username }, { email: email }],
+    })
+
     if (existingUser) {
-      console.warn("Username already exists:", { username })
-      return res.status(400).json({ message: "Username already exists." })
+      const field = existingUser.username === username ? "username" : "email"
+      return res.status(400).json({
+        message: `This ${field} is already registered.`,
+      })
     }
 
     // Create the user
@@ -38,20 +43,22 @@ export const createUser = async (req, res) => {
       name,
       email,
       role,
-      password,
+      password, // This will trigger the virtual setter
     })
-
-    // Set the password (this will trigger the virtual setter)
-    user.password = password
 
     console.log("User object before save:", {
       ...user.toObject(),
-      passwordHash: user.passwordHash ? "exists" : "missing", // Check if passwordHash exists
+      passwordHash: user.passwordHash ? "exists" : "missing",
     })
 
     // Save the user
     await user.save()
     console.log("User created successfully:", { userId: user._id, username })
+
+    // Generate JWT token for the new user
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    })
 
     // Create associated profile based on user role
     if (role === "artist") {
@@ -74,9 +81,8 @@ export const createUser = async (req, res) => {
         })
       } catch (profileError) {
         console.error("Error creating artist profile:", profileError)
-        // Clean up by deleting the user if profile creation fails
         await User.findByIdAndDelete(user._id)
-        return res.status(500).json({
+        return res.status(400).json({
           message: "Error creating artist profile.",
           error: profileError.message,
         })
@@ -112,21 +118,21 @@ export const createUser = async (req, res) => {
         })
       } catch (profileError) {
         console.error("Error creating requester profile:", profileError)
-        // Clean up by deleting the user if profile creation fails
         await User.findByIdAndDelete(user._id)
-        return res.status(500).json({
+        return res.status(400).json({
           message: "Error creating requester profile.",
           error: profileError.message,
         })
       }
     }
 
-    // Respond with the created user information (excluding passwordHash)
+    // Respond with the created user information and token
     const userData = user.toObject()
     delete userData.passwordHash
 
     res.status(201).json({
       user: userData,
+      token,
       message: "User created successfully.",
     })
   } catch (error) {
@@ -138,8 +144,17 @@ export const createUser = async (req, res) => {
         password: requestBody.password ? "provided" : "missing",
       },
     })
+
+    // Handle MongoDB duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0]
+      return res.status(400).json({
+        message: `This ${field} is already registered.`,
+      })
+    }
+
     res.status(500).json({
-      message: "Internal server error.",
+      message: "Failed to create user.",
       error: error.message,
     })
   }

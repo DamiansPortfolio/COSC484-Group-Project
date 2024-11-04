@@ -15,23 +15,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert } from "@/components/ui/alert"
 
 function UserCreationPage() {
+  // Form state
   const [username, setUsername] = useState("")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [role, setRole] = useState("requester")
+  const [formError, setFormError] = useState("")
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { loading, error, user } = useSelector((state) => state.user)
 
+  // Only redirect if we have a user and no errors
   React.useEffect(() => {
-    if (user) {
+    if (user && !error && !formError) {
       navigate("/dashboard")
     }
-  }, [user, navigate])
+  }, [user, error, formError, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setFormError("") // Clear any previous errors
+
+    // Basic form validation
+    if (password.length < 8) {
+      setFormError("Password must be at least 8 characters long")
+      return
+    }
+
     try {
       const userData = {
         username,
@@ -40,14 +52,34 @@ function UserCreationPage() {
         password,
         role,
       }
-      dispatch(registerUser(userData))
-      // Registration successful
-      navigate("/dashboard")
+
+      // Dispatch registration action
+      const result = await dispatch(registerUser(userData))
+
+      // Check if registration was successful
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Registration successful - useEffect will handle navigation
+      console.log("Registration successful")
     } catch (error) {
-      // Error already handled by Redux action
-      console.error("Form submission error:", error)
+      console.error("Registration error:", error)
+      setFormError(error.message || "Registration failed")
+
+      // Clear form on certain errors
+      if (error.message.includes("already registered")) {
+        if (error.message.includes("email")) {
+          setEmail("")
+        } else if (error.message.includes("username")) {
+          setUsername("")
+        }
+      }
     }
   }
+
+  // Determine what error message to show
+  const displayError = formError || error
 
   return (
     <div className='flex justify-center py-8'>
@@ -64,8 +96,10 @@ function UserCreationPage() {
                 type='text'
                 placeholder='Username'
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value.trim())}
                 required
+                disabled={loading}
+                className={error?.includes("username") ? "border-red-500" : ""}
               />
             </div>
             <div>
@@ -75,6 +109,7 @@ function UserCreationPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -82,8 +117,10 @@ function UserCreationPage() {
                 type='email'
                 placeholder='Email'
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trim())}
                 required
+                disabled={loading}
+                className={error?.includes("email") ? "border-red-500" : ""}
               />
             </div>
             <div>
@@ -93,10 +130,15 @@ function UserCreationPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
+                minLength={8}
+                className={
+                  formError?.includes("Password") ? "border-red-500" : ""
+                }
               />
             </div>
             <div>
-              <Select value={role} onValueChange={setRole}>
+              <Select value={role} onValueChange={setRole} disabled={loading}>
                 <SelectTrigger>
                   <SelectValue placeholder='Select Role' />
                 </SelectTrigger>
@@ -109,11 +151,16 @@ function UserCreationPage() {
             <Button
               type='submit'
               disabled={loading}
-              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
+              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200 disabled:bg-blue-300'
             >
-              {loading ? "Registering..." : "Register"}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
-            {error && <Alert variant='destructive'>{error}</Alert>}
+
+            {displayError && (
+              <Alert variant='destructive' className='animate-shake'>
+                {displayError}
+              </Alert>
+            )}
           </form>
         </CardContent>
       </Card>

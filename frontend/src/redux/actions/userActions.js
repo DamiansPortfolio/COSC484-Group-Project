@@ -9,9 +9,12 @@ import {
 } from "../constants/userConstants"
 
 // Register user action
+// In userActions.js
+// In userActions.js
 export const registerUser = (userData) => {
   return async (dispatch) => {
     dispatch({ type: USER_REGISTER_REQUEST })
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/users/register`,
@@ -23,51 +26,54 @@ export const registerUser = (userData) => {
       )
 
       const data = await response.json()
-
-      // Log the response data for debugging
       console.log("Server response:", data)
 
+      // Check for error responses
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to register user")
+        const errorMessage = data.message || data.error || "Registration failed"
+        console.error("Server error:", errorMessage)
+        throw new Error(errorMessage)
       }
 
-      // Make sure the response has the expected structure
+      // Validate response structure
       if (!data.user) {
-        throw new Error("Invalid response format from server")
+        console.error("Invalid server response:", data)
+        throw new Error("Invalid response from server")
       }
 
-      // Dispatch success actions with the correct payload structure
+      // Handle successful registration
+      const { user, token } = data
+
+      // Dispatch success actions
       dispatch({
         type: USER_REGISTER_SUCCESS,
-        payload: {
-          user: data.user,
-          token: data.token, // if you're using tokens
-        },
+        payload: { user, token },
       })
 
-      // Also log in the user
+      // Auto login after registration
       dispatch({
         type: USER_LOGIN_SUCCESS,
-        payload: {
-          user: data.user,
-          token: data.token, // if you're using tokens
-        },
+        payload: { user, token },
       })
 
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(data.user))
-      if (data.token) {
-        localStorage.setItem("token", data.token)
+      // Store user data and token
+      localStorage.setItem("user", JSON.stringify(user))
+      if (token) {
+        localStorage.setItem("token", token)
       }
 
-      return data // Return the data for any following .then() handlers
+      return { success: true, data } // Return success result
     } catch (error) {
       console.error("Registration error:", error)
+
+      // Dispatch failure action with error message
       dispatch({
         type: USER_REGISTER_FAIL,
-        payload: error.message || "Registration failed",
+        payload: error.message,
       })
-      throw error // Re-throw to be caught by the form's error handler
+
+      // Return error result
+      return { success: false, error: error.message }
     }
   }
 }
