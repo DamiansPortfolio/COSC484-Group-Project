@@ -42,7 +42,7 @@ const portfolioItemSchema = new mongoose.Schema({
 const reviewFromRequesterSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "RequesterProfile",
+    ref: "Requester",
     required: true,
   },
   jobId: {
@@ -77,7 +77,7 @@ const artistSchema = new mongoose.Schema(
     skills: {
       primary: [
         {
-          name: { type: String, required: true }, // Ensure name is required
+          name: { type: String, required: true },
           level: {
             type: String,
             enum: ["beginner", "intermediate", "expert"],
@@ -183,5 +183,5 @@ artistSchema.index({
 })
 
 // Create and export the model
-const Artist = mongoose.model("Artist", artistSchema, "artist_profiles")
+const Artist = mongoose.model("Artist", artistSchema, "artists")
 export default Artist

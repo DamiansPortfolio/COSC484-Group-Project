@@ -16,7 +16,7 @@ const reviewFromArtistSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
-const requesterProfileSchema = new mongoose.Schema({
+const requesterSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -62,9 +62,6 @@ const requesterProfileSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
-const Requester = mongoose.model(
-  "RequesterProfile",
-  requesterProfileSchema,
-  "requester_profiles"
-)
+// Create and export the model
+const Requester = mongoose.model("Requester", requesterSchema, "requesters")
 export default Requester

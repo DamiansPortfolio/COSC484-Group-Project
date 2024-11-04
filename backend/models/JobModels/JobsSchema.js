@@ -60,7 +60,7 @@ const applicationSchema = new mongoose.Schema({
 const jobSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "RequesterProfile",
+    ref: "Requester",
     required: true,
   },
   title: { type: String, required: true },
@@ -114,5 +114,6 @@ const jobSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
+// Create and export the model
 const Job = mongoose.model("Job", jobSchema, "jobs")
 export default Job
