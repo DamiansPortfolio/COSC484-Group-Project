@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 import express from "express"
 import cors from "cors"
 import serverless from "@vendia/serverless-express"
+import mongoose from "mongoose" // Add this import
 import { connectToDatabase } from "./config/db.js"
 import userRoutes from "./routes/UserRoutes/userRoutes.js"
 import artistRoutes from "./routes/ArtistRoutes/artistRoutes.js"
@@ -11,6 +12,7 @@ import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
 dotenv.config()
 
 const app = express()
+app.use(express.json())
 
 // Simple CORS setup
 app.use(
@@ -22,14 +24,29 @@ app.use(
   })
 )
 
-app.use(express.json())
-
 // Connect to database before setting up routes
 let isConnected = false
 const connectDb = async () => {
   if (isConnected) return
   await connectToDatabase()
   isConnected = true
+
+  // Add MongoDB connection listeners here
+  mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err)
+    isConnected = false // Reset connection status on error
+  })
+
+  mongoose.connection.once("open", () => {
+    console.log("MongoDB connected successfully")
+    isConnected = true
+  })
+
+  // Add disconnect handler
+  mongoose.connection.on("disconnected", () => {
+    console.log("MongoDB disconnected")
+    isConnected = false
+  })
 }
 
 // Basic routes without auth middleware

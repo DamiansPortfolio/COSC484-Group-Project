@@ -32,8 +32,18 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "Username already exists." })
     }
 
-    // Create the user WITH role
-    const user = new User({ username, name, email, password, role })
+    // Create the user with explicit field assignment
+    const user = new User({
+      username,
+      name,
+      email,
+      password, // This will trigger the virtual
+      role, // Explicitly set the role
+    })
+
+    // Log the user object before saving
+    console.log("User object before save:", user.toObject({ virtuals: true }))
+
     await user.save()
     console.log("User created successfully:", { userId: user._id, username })
 
@@ -58,7 +68,11 @@ export const createUser = async (req, res) => {
         })
       } catch (profileError) {
         console.error("Error creating artist profile:", profileError)
-        return res.status(500).json({ message: "Internal server error." })
+        // Consider deleting the user if profile creation fails
+        await User.findByIdAndDelete(user._id)
+        return res
+          .status(500)
+          .json({ message: "Error creating artist profile." })
       }
     } else if (role === "requester") {
       try {
@@ -78,18 +92,23 @@ export const createUser = async (req, res) => {
     }
 
     // Respond with the created user information
-    const { passwordHash, ...userData } = user.toObject() // Exclude password from the response
-    res
-      .status(201)
-      .json({ user: userData, message: "User created successfully." })
+    const userData = user.toObject()
+    delete userData.passwordHash // Remove sensitive data
+
+    res.status(201).json({
+      user: userData,
+      message: "User created successfully.",
+    })
   } catch (error) {
-    // Log detailed error information
     console.error("Error creating user:", {
       message: error.message,
       stack: error.stack,
-      requestBody: requestBody, // Log the incoming data for context
+      requestBody: requestBody,
     })
-    res.status(500).json({ message: "Internal server error." })
+    res.status(500).json({
+      message: "Internal server error.",
+      error: error.message,
+    })
   }
 }
 

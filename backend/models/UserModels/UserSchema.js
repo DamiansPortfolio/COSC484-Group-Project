@@ -1,37 +1,65 @@
 import mongoose from "mongoose"
-import bcrypt from "bcryptjs" // Use bcryptjs
+import bcrypt from "bcryptjs"
 
-// In your User model (User.js)
 const userSchema = new mongoose.Schema(
   {
-    username: { type: String, required: true, unique: true, index: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true, index: true },
-    passwordHash: { type: String, required: true },
-    avatarUrl: { type: String, default: "/path/to/avatar.jpg" },
-    location: { type: String, default: "" },
-    role: { type: String, enum: ["artist", "requester"], required: true },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    passwordHash: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: ["artist", "requester"],
+      required: true,
+      default: undefined, // Ensure no default value
+    },
+    avatarUrl: {
+      type: String,
+      default: "/path/to/avatar.jpg",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 )
 
-// Add a virtual for password
+// Password virtual
 userSchema.virtual("password").set(function (password) {
   this._password = password
-  this.passwordHash = password
 })
 
-// Modify the pre-save hook
+// Pre-save middleware
 userSchema.pre("save", async function (next) {
-  if (this._password) {
-    const saltRounds = 10
-    this.passwordHash = await bcrypt.hash(this._password, saltRounds) // This remains unchanged
+  try {
+    if (this._password) {
+      const salt = await bcrypt.genSalt(10)
+      this.passwordHash = await bcrypt.hash(this._password, salt)
+    }
+    next()
+  } catch (error) {
+    next(error)
   }
-  next()
 })
 
-// Create and export the model
 const User = mongoose.model("User", userSchema, "users")
 export default User
