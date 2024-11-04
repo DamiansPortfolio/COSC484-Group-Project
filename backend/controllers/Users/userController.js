@@ -7,11 +7,11 @@ import jwt from "jsonwebtoken"
 
 // Create a new user and associated profiles based on the role
 export const createUser = async (req, res) => {
-  const requestBody = req.body // Capture the incoming request body
-  console.log("Incoming request body:", requestBody) // Log the incoming request
+  const requestBody = req.body
+  console.log("Incoming request body:", requestBody)
 
   try {
-    const { username, name, email, password, role, skills } = requestBody // Include skills from the request body if needed
+    const { username, name, email, password, role, skills } = requestBody
 
     // Check if all required fields are provided
     if (!username || !name || !email || !password || !role) {
@@ -32,39 +32,49 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "Username already exists." })
     }
 
-    // Create the user
-    const user = new User({ username, name, email, password })
+    // Create the user WITH role
+    const user = new User({ username, name, email, password, role })
     await user.save()
     console.log("User created successfully:", { userId: user._id, username })
 
     // Create associated profile based on user role
     if (role === "artist") {
-      const artistProfile = new ArtistProfile({
-        userId: user._id,
-        portfolioItems: [],
-        skills: {
-          primary: skills?.primary || [],
-          secondary: skills?.secondary || [],
-        },
-        bio: "",
-        socialLinks: { website: "", instagram: "" },
-        reviews: [],
-        averageRating: 0,
-      })
-      await artistProfile.save()
-      console.log("Artist profile created successfully for user:", {
-        userId: user._id,
-      })
+      try {
+        const artistProfile = new ArtistProfile({
+          userId: user._id,
+          portfolioItems: [],
+          skills: {
+            primary: skills?.primary || [],
+            secondary: skills?.secondary || [],
+          },
+          bio: "",
+          socialLinks: { website: "", instagram: "" },
+          reviews: [],
+          averageRating: 0,
+        })
+        await artistProfile.save()
+        console.log("Artist profile created successfully for user:", {
+          userId: user._id,
+        })
+      } catch (profileError) {
+        console.error("Error creating artist profile:", profileError)
+        return res.status(500).json({ message: "Internal server error." })
+      }
     } else if (role === "requester") {
-      const requesterProfile = new RequesterProfile({
-        userId: user._id,
-        jobsPosted: [],
-        notifications: [],
-      })
-      await requesterProfile.save()
-      console.log("Requester profile created successfully for user:", {
-        userId: user._id,
-      })
+      try {
+        const requesterProfile = new RequesterProfile({
+          userId: user._id,
+          jobsPosted: [],
+          notifications: [],
+        })
+        await requesterProfile.save()
+        console.log("Requester profile created successfully for user:", {
+          userId: user._id,
+        })
+      } catch (profileError) {
+        console.error("Error creating requester profile:", profileError)
+        return res.status(500).json({ message: "Internal server error." })
+      }
     }
 
     // Respond with the created user information
