@@ -63,5 +63,9 @@ const requesterSchema = new mongoose.Schema({
 })
 
 // Create and export the model
-const Requester = mongoose.model("Requester", requesterSchema, "requesters")
+const Requester = mongoose.model(
+  "Requester",
+  requesterSchema,
+  "requester_profiles"
+)
 export default Requester
