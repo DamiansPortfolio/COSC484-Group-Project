@@ -27,7 +27,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["artist", "requester"],
       required: true,
-      default: undefined, // Ensure no default value
     },
     avatarUrl: {
       type: String,
@@ -43,23 +42,23 @@ const userSchema = new mongoose.Schema(
   }
 )
 
-// Password virtual
+// Modify the virtual to properly handle the password
 userSchema.virtual("password").set(function (password) {
+  // Store the password temporarily
   this._password = password
-})
-
-// Pre-save middleware
-userSchema.pre("save", async function (next) {
-  try {
-    if (this._password) {
-      const salt = await bcrypt.genSalt(10)
-      this.passwordHash = await bcrypt.hash(this._password, salt)
-    }
-    next()
-  } catch (error) {
-    next(error)
+  // Hash it immediately
+  if (password) {
+    const salt = bcrypt.genSaltSync(10)
+    this.passwordHash = bcrypt.hashSync(password, salt)
   }
 })
+
+// Remove the pre-save middleware since we're handling password hashing in the virtual
+
+// Method to compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.passwordHash)
+}
 
 const User = mongoose.model("User", userSchema, "users")
 export default User

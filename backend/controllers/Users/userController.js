@@ -19,7 +19,7 @@ export const createUser = async (req, res) => {
         username,
         name,
         email,
-        password,
+        password: password ? "provided" : "missing",
         role,
       })
       return res.status(400).json({ message: "All fields are required." })
@@ -32,18 +32,24 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "Username already exists." })
     }
 
-    // Create the user with explicit field assignment
+    // Create the user
     const user = new User({
       username,
       name,
       email,
-      password, // This will trigger the virtual
-      role, // Explicitly set the role
+      role,
+      password,
     })
 
-    // Log the user object before saving
-    console.log("User object before save:", user.toObject({ virtuals: true }))
+    // Set the password (this will trigger the virtual setter)
+    user.password = password
 
+    console.log("User object before save:", {
+      ...user.toObject(),
+      passwordHash: user.passwordHash ? "exists" : "missing", // Check if passwordHash exists
+    })
+
+    // Save the user
     await user.save()
     console.log("User created successfully:", { userId: user._id, username })
 
@@ -68,18 +74,37 @@ export const createUser = async (req, res) => {
         })
       } catch (profileError) {
         console.error("Error creating artist profile:", profileError)
-        // Consider deleting the user if profile creation fails
+        // Clean up by deleting the user if profile creation fails
         await User.findByIdAndDelete(user._id)
-        return res
-          .status(500)
-          .json({ message: "Error creating artist profile." })
+        return res.status(500).json({
+          message: "Error creating artist profile.",
+          error: profileError.message,
+        })
       }
     } else if (role === "requester") {
       try {
         const requesterProfile = new RequesterProfile({
           userId: user._id,
+          company: requestBody.company || "",
+          industry: requestBody.industry || "",
           jobsPosted: [],
+          activeJobs: [],
+          completedJobs: [],
+          preferences: {
+            jobAlerts: true,
+            emailNotifications: true,
+            visibility: "public",
+          },
+          statistics: {
+            totalJobsPosted: 0,
+            totalHires: 0,
+            averageRating: 0,
+            responseRate: 0,
+          },
+          verificationStatus: "pending",
           notifications: [],
+          reviews: [],
+          favoriteArtists: [],
         })
         await requesterProfile.save()
         console.log("Requester profile created successfully for user:", {
@@ -87,13 +112,18 @@ export const createUser = async (req, res) => {
         })
       } catch (profileError) {
         console.error("Error creating requester profile:", profileError)
-        return res.status(500).json({ message: "Internal server error." })
+        // Clean up by deleting the user if profile creation fails
+        await User.findByIdAndDelete(user._id)
+        return res.status(500).json({
+          message: "Error creating requester profile.",
+          error: profileError.message,
+        })
       }
     }
 
-    // Respond with the created user information
+    // Respond with the created user information (excluding passwordHash)
     const userData = user.toObject()
-    delete userData.passwordHash // Remove sensitive data
+    delete userData.passwordHash
 
     res.status(201).json({
       user: userData,
@@ -103,7 +133,10 @@ export const createUser = async (req, res) => {
     console.error("Error creating user:", {
       message: error.message,
       stack: error.stack,
-      requestBody: requestBody,
+      requestBody: {
+        ...requestBody,
+        password: requestBody.password ? "provided" : "missing",
+      },
     })
     res.status(500).json({
       message: "Internal server error.",
