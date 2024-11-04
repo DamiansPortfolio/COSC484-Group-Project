@@ -30,16 +30,23 @@ function UserCreationPage() {
     }
   }, [user, navigate])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const userData = {
-      username,
-      name,
-      email,
-      password,
-      role,
+    try {
+      const userData = {
+        username,
+        name,
+        email,
+        password,
+        role,
+      }
+      dispatch(registerUser(userData))
+      // Registration successful
+      navigate("/dashboard")
+    } catch (error) {
+      // Error already handled by Redux action
+      console.error("Form submission error:", error)
     }
-    dispatch(registerUser(userData))
   }
 
   return (

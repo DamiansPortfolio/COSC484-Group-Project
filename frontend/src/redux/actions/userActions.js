@@ -22,20 +22,52 @@ export const registerUser = (userData) => {
         }
       )
 
+      const data = await response.json()
+
+      // Log the response data for debugging
+      console.log("Server response:", data)
+
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Registration error response:", errorData)
-        throw new Error("Failed to register user")
+        throw new Error(data.error || data.message || "Failed to register user")
       }
 
-      const data = await response.json()
-      dispatch({ type: USER_REGISTER_SUCCESS, payload: data })
+      // Make sure the response has the expected structure
+      if (!data.user) {
+        throw new Error("Invalid response format from server")
+      }
 
-      // Automatically log in the user after registration
-      dispatch({ type: USER_LOGIN_SUCCESS, payload: data })
+      // Dispatch success actions with the correct payload structure
+      dispatch({
+        type: USER_REGISTER_SUCCESS,
+        payload: {
+          user: data.user,
+          token: data.token, // if you're using tokens
+        },
+      })
+
+      // Also log in the user
+      dispatch({
+        type: USER_LOGIN_SUCCESS,
+        payload: {
+          user: data.user,
+          token: data.token, // if you're using tokens
+        },
+      })
+
+      // Store user data in localStorage
+      localStorage.setItem("user", JSON.stringify(data.user))
+      if (data.token) {
+        localStorage.setItem("token", data.token)
+      }
+
+      return data // Return the data for any following .then() handlers
     } catch (error) {
       console.error("Registration error:", error)
-      dispatch({ type: USER_REGISTER_FAIL, payload: error.message })
+      dispatch({
+        type: USER_REGISTER_FAIL,
+        payload: error.message || "Registration failed",
+      })
+      throw error // Re-throw to be caught by the form's error handler
     }
   }
 }
