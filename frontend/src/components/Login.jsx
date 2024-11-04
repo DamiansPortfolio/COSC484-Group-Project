@@ -22,7 +22,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user && !error) {
-      navigate("/")
+      navigate("/dashboard")
     }
   }, [user, error, navigate])
 

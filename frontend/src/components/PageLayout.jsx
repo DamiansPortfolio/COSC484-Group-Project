@@ -9,10 +9,14 @@ const PageLayout = ({ children }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
   const location = useLocation()
 
+  // Define routes that should NOT show the PageHeader
+  const noPageHeaderRoutes = ["/"]
+
   // Define routes that should NOT show the sidebar
   const noSidebarRoutes = [
     "/login",
     "/register",
+    "/",
     // Add more routes here that shouldn't show the sidebar
     // '/forgot-password',
     // '/reset-password',
@@ -22,12 +26,12 @@ const PageLayout = ({ children }) => {
 
   // Define route patterns that should show the sidebar
   const sidebarPatterns = [
-    "/", // Dashboard
     "/profile", // Will match any profile route
     "/jobs", // Future route
     "/applications", // Future route
     "/messages", // Future route
     "/reviews", // Future route
+    "/dashboard",
     // Add more route patterns here that should show the sidebar
     // '/projects',
     // '/notifications',
@@ -40,17 +44,21 @@ const PageLayout = ({ children }) => {
     !noSidebarRoutes.includes(location.pathname) &&
     sidebarPatterns.some((pattern) => location.pathname.startsWith(pattern))
 
+  // Check if current path should show PageHeader
+  const showPageHeader = !noPageHeaderRoutes.includes(location.pathname)
+
   return (
     <div className='min-h-screen flex flex-col'>
-      <PageHeader />
-      <div className='flex flex-1'>
+      {showPageHeader && <PageHeader />}
+      <div className='flex flex-1 w-full'>
         {showSidebar && (
           <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
         )}
         <main
           className={`
             flex-1 
-            p-6 
+            ${location.pathname === "/" ? "p-0" : "p-6"}
+            w-full
             bg-gray-50
             transition-all 
             duration-300 

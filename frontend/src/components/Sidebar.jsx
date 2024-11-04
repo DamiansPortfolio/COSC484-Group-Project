@@ -16,7 +16,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
   const location = useLocation()
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { name: "Job Listings", icon: Briefcase, path: "/jobs" },
     { name: "My Applications", icon: FileText, path: "/applications" },
     { name: "Messages", icon: MessageSquare, path: "/messages" },

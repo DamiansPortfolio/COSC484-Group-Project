@@ -11,6 +11,7 @@ import UserCreationPage from "./pages/UserCreationPage"
 import Dashboard from "./pages/Dashboard"
 import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
+import WelcomePage from "./pages/WelcomePage"
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
             path='/'
             element={
               <PageLayout>
-                <Dashboard />
+                <WelcomePage />
               </PageLayout>
             }
           />
@@ -46,6 +47,14 @@ function App() {
             element={
               <PageLayout>
                 <Login />
+              </PageLayout>
+            }
+          />
+          <Route
+            path='/dashboard'
+            element={
+              <PageLayout>
+                <Dashboard />
               </PageLayout>
             }
           />
