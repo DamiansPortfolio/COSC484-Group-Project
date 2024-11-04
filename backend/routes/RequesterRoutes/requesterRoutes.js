@@ -10,7 +10,7 @@ import {
   getRequesterStats,
   getRequesterJobs,
   addReview,
-} from "../controllers/requesterProfileController.js"
+} from "../../controllers/Requesters/requesterController.js"
 
 const router = express.Router()
 

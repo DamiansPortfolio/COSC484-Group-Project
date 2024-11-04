@@ -5,7 +5,7 @@ import {
   getAllUsers,
   getUserById,
   loginUser,
-} from "../controllers/userController.js"
+} from "../../controllers/Users/userController.js"
 
 const router = express.Router()
 

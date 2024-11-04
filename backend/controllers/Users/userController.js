@@ -1,6 +1,6 @@
-import User from "../models/User.js"
-import ArtistProfile from "../models/ArtistSchema.js"
-import RequesterProfile from "../models/RequesterSchema.js"
+import User from "../../models/UserModels/UserSchema.js"
+import ArtistProfile from "../../models/ArtistModels/ArtistSchema.js"
+import RequesterProfile from "../../models/RequesterModels/RequesterSchema.js"
 
 import bcrypt from "bcryptjs" // Use bcryptjs
 import jwt from "jsonwebtoken"

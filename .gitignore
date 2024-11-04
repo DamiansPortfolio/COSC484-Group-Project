@@ -7,41 +7,62 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+/node_modules
+**/node_modules
+
+# Build outputs
 dist
 dist-ssr
 *.local
+build/
+dist/
+coverage/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment files - now we want to ignore all of them
+# Environment files
 .env
 .env.*
 .env.local
 .env.production
 .env.development
 
-
-
-# Build directories
-build/
-dist/
-coverage/
-
 # System files
 .DS_Store
 Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
-# AWS files with sensitive info
-template.yaml
+# AWS specific
 .aws-sam/
+.aws-sam/build/
 samconfig.toml
+samconfig.*.toml
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Debug files
+.debug/
+debug.log
+debug/
+
+# Local development files
+*.dev.*
+local.*

@@ -1,5 +1,5 @@
 // controllers/artistProfileController.js
-import Artist from "../models/ArtistSchema.js"
+import Artist from "../../models/ArtistModels/ArtistSchema.js"
 import mongoose from "mongoose"
 
 // Get all artists

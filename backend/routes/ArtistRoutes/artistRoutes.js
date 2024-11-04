@@ -7,7 +7,7 @@ import {
   addPortfolioItem,
   updatePortfolioItem,
   deletePortfolioItem,
-} from "../controllers/artistProfileController.js"
+} from "../../controllers/Artists/artistController.js"
 
 const router = express.Router()
 

@@ -1,5 +1,5 @@
 // controllers/requesterProfileController.js
-import Requester from "../models/RequesterSchema.js"
+import Requester from "../../models/RequesterModels/RequesterSchema.js"
 import mongoose from "mongoose"
 
 export const getAllRequesters = async (req, res) => {

@@ -12,7 +12,7 @@ import {
   addMilestone,
   updateMilestone,
   searchJobs,
-} from "../controllers/jobsController.js"
+} from "../../controllers/Jobs/jobController.js"
 
 const router = express.Router()
 

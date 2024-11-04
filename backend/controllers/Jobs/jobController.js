@@ -1,6 +1,6 @@
 // controllers/jobsController.js
-import Job from "../models/JobsSchema.js"
-import Requester from "../models/RequesterSchema.js"
+import Job from "../../models/JobModels/JobsSchema.js"
+import Requester from "../../models/RequesterModels/RequesterSchema.js"
 
 export const getAllJobs = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for backend API
+Description: SAM template for backend API (no auth)
 
 Resources:
   BackendApi:
@@ -13,7 +13,7 @@ Resources:
       MemorySize: 512
       Timeout: 30
       Events:
-        ApiEvent:
+        AnyApiEvent:
           Type: Api
           Properties:
             Path: /{proxy+}
@@ -21,7 +21,6 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: "production"
-          MONGODB_URI: !Sub "${MONGODB_URI}"
+          MONGODB_URI: "mongodb+srv://damian-admin:FRte93bxoRcibwTp@production-cluster.u37gt.mongodb.net/user_management?retryWrites=true&w=majority&appName=production-cluster"
           DB_USERS: "user_management"
-          JWT_SECRET: !Sub "${JWT_SECRET}"
-          FRONTEND_URL: "your-amplify-domain-here"
+          FRONTEND_URL: "*"

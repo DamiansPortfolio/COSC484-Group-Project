@@ -2,11 +2,11 @@ import dotenv from "dotenv"
 import express from "express"
 import cors from "cors"
 import serverless from "@vendia/serverless-express"
-import { connectToDatabase } from "./db.js"
-import userRoutes from "./routes/userRoutes.js"
-import artistRoutes from "./routes/artistRoutes.js"
-import requesterRoutes from "./routes/requesterRoutes.js"
-import jobRoutes from "./routes/jobsRoutes.js"
+import { connectToDatabase } from "./config/db.js"
+import userRoutes from "./routes/UserRoutes/userRoutes.js"
+import artistRoutes from "./routes/ArtistRoutes/artistRoutes.js"
+import requesterRoutes from "./routes/RequesterRoutes/requesterRoutes.js"
+import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
 
 dotenv.config()
 
