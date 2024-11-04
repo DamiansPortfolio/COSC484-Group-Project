@@ -1,4 +1,3 @@
-// components/dashboard/Recommendations.js
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
@@ -30,15 +29,20 @@ const ArtistCard = ({ artist }) => (
           {artist.userId?.name || "Unknown Artist"}
         </Link>
       </h3>
-      {/* Safely join skills or show 'No skills listed' if empty */}
       <p className='text-sm text-gray-600'>
-        {(Array.isArray(artist.skills) ? artist.skills : []).join(", ") ||
+        Primary Skills:{" "}
+        {artist.skills?.primary?.map((skill) => skill.name).join(", ") ||
           "No skills listed"}
       </p>
+      {artist.skills?.secondary?.length > 0 && (
+        <p className='text-sm text-gray-500'>
+          Secondary: {artist.skills.secondary.join(", ")}
+        </p>
+      )}
       <p className='text-sm text-yellow-500'>
-        Rating: {artist.averageRating.toFixed(1)} ★
+        Rating: {artist.averageRating?.toFixed(1) || "0.0"} ★
       </p>
-      {artist.location && (
+      {artist.userId?.location && (
         <p className='text-sm text-gray-500'>{artist.userId.location}</p>
       )}
     </CardContent>
@@ -69,6 +73,17 @@ const Recommendations = () => {
     dispatch(fetchRecommendations())
   }, [dispatch])
 
+  // Get unique primary skills from all artists
+  const getAllPrimarySkills = () => {
+    return [
+      ...new Set(
+        artists.flatMap(
+          (artist) => artist.skills?.primary?.map((skill) => skill.name) || []
+        )
+      ),
+    ]
+  }
+
   if (loading) {
     return (
       <Card>
@@ -98,17 +113,14 @@ const Recommendations = () => {
               <DropdownMenuItem onClick={() => dispatch(setSelectedSkill(""))}>
                 All Skills
               </DropdownMenuItem>
-              {/* Dynamically generate skill options from all available skills */}
-              {[...new Set(artists.flatMap((artist) => artist.skills))].map(
-                (skill) => (
-                  <DropdownMenuItem
-                    key={skill}
-                    onClick={() => dispatch(setSelectedSkill(skill))}
-                  >
-                    {skill}
-                  </DropdownMenuItem>
-                )
-              )}
+              {getAllPrimarySkills().map((skill) => (
+                <DropdownMenuItem
+                  key={skill}
+                  onClick={() => dispatch(setSelectedSkill(skill))}
+                >
+                  {skill}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -133,7 +145,11 @@ const Recommendations = () => {
           <CardContent className='grid grid-cols-2 gap-4'>
             {artists
               .filter((artist) =>
-                selectedSkill ? artist.skills.includes(selectedSkill) : true
+                selectedSkill
+                  ? artist.skills?.primary?.some(
+                      (skill) => skill.name === selectedSkill
+                    )
+                  : true
               )
               .sort((a, b) => {
                 if (sortOption === "name") {
@@ -142,7 +158,7 @@ const Recommendations = () => {
                   )
                 }
                 if (sortOption === "rating") {
-                  return b.averageRating - a.averageRating
+                  return (b.averageRating || 0) - (a.averageRating || 0)
                 }
                 return 0
               })

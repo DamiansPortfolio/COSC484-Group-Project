@@ -5,11 +5,10 @@ import mongoose from "mongoose"
 // Get all artists
 export const getAllArtists = async (req, res) => {
   try {
-    // Use populate to get the associated user data
     const artists = await Artist.find().populate({
       path: "userId",
       model: "User",
-      select: "name username avatarUrl location", // Specify the fields you want
+      select: "name username avatarUrl location",
     })
     res.status(200).json(artists)
   } catch (error) {
@@ -18,12 +17,42 @@ export const getAllArtists = async (req, res) => {
   }
 }
 
-// Get individual artist profile
+export const getRecommendations = async (req, res) => {
+  try {
+    console.log("Fetching recommendations...") // Debug log
+
+    const artists = await Artist.find()
+      .populate({
+        path: "userId",
+        model: "User",
+        select: "name username avatarUrl location",
+      })
+      .select("userId skills averageRating professionalInfo.availability")
+      .sort({ averageRating: -1 })
+      .limit(10) // Limit to 10 recommendations
+
+    console.log(`Found ${artists.length} recommendations`) // Debug log
+
+    res.status(200).json(artists)
+  } catch (error) {
+    console.error("Error in getRecommendations:", error)
+    res.status(500).json({
+      message: "Error fetching recommendations",
+      error: error.message,
+    })
+  }
+}
+
+// Update the getArtistProfile to be more specific about userId check
 export const getArtistProfile = async (req, res) => {
   try {
     const userId = req.params.userId
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    // Only check for valid userId format if it's not "recommendations"
+    if (
+      userId !== "recommendations" &&
+      !mongoose.Types.ObjectId.isValid(userId)
+    ) {
       return res.status(400).json({ message: "Invalid userId format." })
     }
 
@@ -45,6 +74,7 @@ export const getArtistProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
 // Update artist profile
 export const updateArtistProfile = async (req, res) => {
   const userId = req.params.userId
@@ -59,7 +89,11 @@ export const updateArtistProfile = async (req, res) => {
       { userId: new mongoose.Types.ObjectId(userId) },
       updatedData,
       { new: true }
-    )
+    ).populate({
+      path: "userId",
+      model: "User",
+      select: "name username avatarUrl location",
+    })
 
     if (!updatedProfile) {
       return res.status(404).json({ message: "Artist profile not found." })
@@ -106,7 +140,14 @@ export const addPortfolioItem = async (req, res) => {
     artist.portfolioItems.push(newItem)
     await artist.save()
 
-    res.status(201).json(artist)
+    // Return populated artist data
+    const populatedArtist = await Artist.findById(artist._id).populate({
+      path: "userId",
+      model: "User",
+      select: "name username avatarUrl location",
+    })
+
+    res.status(201).json(populatedArtist)
   } catch (error) {
     console.error("Error adding portfolio item:", error)
     res.status(500).json({ message: "Internal server error." })
@@ -142,7 +183,15 @@ export const updatePortfolioItem = async (req, res) => {
     }
 
     await artist.save()
-    res.json(artist)
+
+    // Return populated artist data
+    const populatedArtist = await Artist.findById(artist._id).populate({
+      path: "userId",
+      model: "User",
+      select: "name username avatarUrl location",
+    })
+
+    res.json(populatedArtist)
   } catch (error) {
     console.error("Error updating portfolio item:", error)
     res.status(500).json({ message: "Internal server error." })
@@ -172,4 +221,14 @@ export const deletePortfolioItem = async (req, res) => {
     console.error("Error deleting portfolio item:", error)
     res.status(500).json({ message: "Internal server error." })
   }
+}
+
+export default {
+  getAllArtists,
+  getRecommendations,
+  getArtistProfile,
+  updateArtistProfile,
+  addPortfolioItem,
+  updatePortfolioItem,
+  deletePortfolioItem,
 }

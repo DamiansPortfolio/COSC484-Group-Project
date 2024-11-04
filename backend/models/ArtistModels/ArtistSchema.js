@@ -183,5 +183,5 @@ artistSchema.index({
 })
 
 // Create and export the model
-const Artist = mongoose.model("Artist", artistSchema, "artists_profiles")
+const Artist = mongoose.model("Artist", artistSchema, "artist_profiles")
 export default Artist
