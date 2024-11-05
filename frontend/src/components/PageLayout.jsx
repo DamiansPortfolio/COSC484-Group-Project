@@ -1,58 +1,79 @@
 // components/PageLayout.js
-import React, { useState } from "react"
-import { useLocation } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useSelector, useDispatch } from "react-redux"
 import PageHeader from "./PageHeader"
 import Sidebar from "./Sidebar"
+import { refreshToken } from "../redux/actions/userActions"
 
 const PageLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
   const location = useLocation()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
-  // Define routes that should NOT show the PageHeader
-  const noPageHeaderRoutes = ["/"]
+  // Get auth state from Redux
+  const { isAuthenticated, user } = useSelector((state) => state.user)
 
-  // Define routes that should NOT show the sidebar
-  const noSidebarRoutes = [
-    "/login",
-    "/register",
-    "/",
-    // Add more routes here that shouldn't show the sidebar
-    // '/forgot-password',
-    // '/reset-password',
-    // '/settings',
-    // etc...
-  ]
-
-  // Define route patterns that should show the sidebar
-  const sidebarPatterns = [
-    "/profile", // Will match any profile route
-    "/jobs", // Future route
-    "/applications", // Future route
-    "/messages", // Future route
-    "/reviews", // Future route
+  // Routes configuration
+  const publicRoutes = ["/login", "/register", "/"]
+  const protectedRoutes = [
     "/dashboard",
-    // Add more route patterns here that should show the sidebar
-    // '/projects',
-    // '/notifications',
-    // '/commissions',
-    // etc...
+    "/profile",
+    "/jobs",
+    "/applications",
+    "/messages",
+    "/reviews",
   ]
+  const noHeaderRoutes = ["/"]
 
-  // Check if current path should show sidebar
+  // Check if current route is protected
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    location.pathname.startsWith(route)
+  )
+
+  // Check if current route is public
+  const isPublicRoute = publicRoutes.includes(location.pathname)
+
+  // Auth check effect
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (isProtectedRoute && !isAuthenticated) {
+        // Try to refresh token first
+        const refreshed = await dispatch(refreshToken())
+        if (!refreshed) {
+          navigate("/login", {
+            replace: true,
+            state: { from: location.pathname },
+          })
+        }
+      }
+    }
+
+    checkAuth()
+  }, [isProtectedRoute, isAuthenticated, location, navigate, dispatch])
+
+  // Sidebar visibility logic
   const showSidebar =
-    !noSidebarRoutes.includes(location.pathname) &&
-    sidebarPatterns.some((pattern) => location.pathname.startsWith(pattern))
+    isAuthenticated &&
+    !publicRoutes.includes(location.pathname) &&
+    protectedRoutes.some((route) => location.pathname.startsWith(route))
 
-  // Check if current path should show PageHeader
-  const showPageHeader = !noPageHeaderRoutes.includes(location.pathname)
+  // Header visibility logic
+  const showHeader = !noHeaderRoutes.includes(location.pathname)
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
 
   return (
     <div className='min-h-screen flex flex-col'>
-      {showPageHeader && <PageHeader />}
+      {showHeader && <PageHeader />}
       <div className='flex flex-1 w-full'>
         {showSidebar && (
-          <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+          <Sidebar
+            sidebarOpen={sidebarOpen}
+            toggleSidebar={toggleSidebar}
+            user={user}
+          />
         )}
         <main
           className={`
@@ -62,6 +83,7 @@ const PageLayout = ({ children }) => {
             bg-gray-50
             transition-all 
             duration-300 
+            ${showSidebar && sidebarOpen ? "ml-64" : "ml-0"}
           `}
         >
           {children}

@@ -1,10 +1,10 @@
-import Artist from "../../models/ArtistModels/ArtistSchema.js";
-import mongoose from "mongoose";
+import Artist from "../../models/ArtistModels/ArtistSchema.js"
+import mongoose from "mongoose"
 
 // Helper function to check if user owns the profile
 const checkProfileOwnership = (artistId, authenticatedUserId) => {
-  return artistId.toString() === authenticatedUserId.toString();
-};
+  return artistId.toString() === authenticatedUserId.toString()
+}
 
 // Helper function to sanitize portfolio item
 const sanitizePortfolioItem = (item) => {
@@ -27,8 +27,8 @@ const sanitizePortfolioItem = (item) => {
       fileSize: Number(item.metadata?.fileSize) || 0,
       license: item.metadata?.license || "",
     },
-  };
-};
+  }
+}
 
 // Get all artists (public endpoint)
 export const getAllArtists = async (req, res) => {
@@ -40,7 +40,7 @@ export const getAllArtists = async (req, res) => {
       })
       .select(
         "skills.primary averageRating professionalInfo.availability portfolioItems.imageUrl portfolioItems.title"
-      );
+      )
 
     // Remove sensitive or unnecessary information for public listing
     const publicArtists = artists.map((artist) => ({
@@ -57,31 +57,31 @@ export const getAllArtists = async (req, res) => {
           imageUrl: item.imageUrl,
           title: item.title,
         })),
-    }));
+    }))
 
-    res.status(200).json(publicArtists);
+    res.status(200).json(publicArtists)
   } catch (error) {
-    console.error("Error fetching artists:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error fetching artists:", error)
+    res.status(500).json({ message: "Internal server error." })
   }
-};
+}
 
 // Get recommendations
 export const getRecommendations = async (req, res) => {
   try {
-    const { skills, availability } = req.query;
+    const { skills, availability } = req.query
 
-    let query = {};
+    let query = {}
 
     // Filter by skills if provided
     if (skills) {
-      const skillsList = skills.split(",").map((s) => s.trim());
-      query["skills.primary.name"] = { $in: skillsList };
+      const skillsList = skills.split(",").map((s) => s.trim())
+      query["skills.primary.name"] = { $in: skillsList }
     }
 
     // Filter by availability if provided
     if (availability) {
-      query["professionalInfo.availability.status"] = availability;
+      query["professionalInfo.availability.status"] = availability
     }
 
     const artists = await Artist.find(query)
@@ -91,7 +91,7 @@ export const getRecommendations = async (req, res) => {
       })
       .select("skills averageRating professionalInfo.availability")
       .sort({ averageRating: -1, "reviews.length": -1 })
-      .limit(10);
+      .limit(10)
 
     const recommendations = artists.map((artist) => ({
       _id: artist._id,
@@ -99,24 +99,24 @@ export const getRecommendations = async (req, res) => {
       skills: artist.skills.primary,
       averageRating: artist.averageRating,
       availability: artist.professionalInfo?.availability?.status,
-    }));
+    }))
 
-    res.status(200).json(recommendations);
+    res.status(200).json(recommendations)
   } catch (error) {
-    console.error("Error in getRecommendations:", error);
+    console.error("Error in getRecommendations:", error)
     res.status(500).json({
       message: "Error fetching recommendations",
-    });
+    })
   }
-};
+}
 
 // Get artist profile
 export const getArtistProfile = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.userId
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId format." });
+      return res.status(400).json({ message: "Invalid userId format." })
     }
 
     const artistProfile = await Artist.findOne({
@@ -124,10 +124,10 @@ export const getArtistProfile = async (req, res) => {
     }).populate({
       path: "userId",
       select: "name username avatarUrl location",
-    });
+    })
 
     if (!artistProfile) {
-      return res.status(404).json({ message: "Artist profile not found." });
+      return res.status(404).json({ message: "Artist profile not found." })
     }
 
     // If not the profile owner, return limited information
@@ -154,40 +154,40 @@ export const getArtistProfile = async (req, res) => {
           ratePerHour: artistProfile.professionalInfo?.ratePerHour,
           preferredJobTypes: artistProfile.professionalInfo?.preferredJobTypes,
         },
-      };
-      return res.json(publicProfile);
+      }
+      return res.json(publicProfile)
     }
 
-    res.json(artistProfile);
+    res.json(artistProfile)
   } catch (error) {
-    console.error("Error retrieving artist profile:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error retrieving artist profile:", error)
+    res.status(500).json({ message: "Server error" })
   }
-};
+}
 
 // Update artist profile
 export const updateArtistProfile = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.userId
 
     // Verify user is updating their own profile
     if (userId !== req.user._id.toString()) {
       return res
         .status(403)
-        .json({ message: "Not authorized to update this profile" });
+        .json({ message: "Not authorized to update this profile" })
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid userId format." });
+      return res.status(400).json({ message: "Invalid userId format." })
     }
 
-    const updatedData = req.body;
+    const updatedData = req.body
 
     // Prevent updating sensitive fields
-    delete updatedData.reviews;
-    delete updatedData.statistics;
-    delete updatedData.averageRating;
-    delete updatedData.verificationStatus;
+    delete updatedData.reviews
+    delete updatedData.statistics
+    delete updatedData.averageRating
+    delete updatedData.verificationStatus
 
     // Validate professional info if provided
     if (updatedData.professionalInfo) {
@@ -195,7 +195,7 @@ export const updateArtistProfile = async (req, res) => {
         if (updatedData.professionalInfo.ratePerHour.amount < 0) {
           return res
             .status(400)
-            .json({ message: "Rate per hour cannot be negative" });
+            .json({ message: "Rate per hour cannot be negative" })
         }
       }
     }
@@ -210,165 +210,188 @@ export const updateArtistProfile = async (req, res) => {
     ).populate({
       path: "userId",
       select: "name username avatarUrl location",
-    });
+    })
 
     if (!updatedProfile) {
-      return res.status(404).json({ message: "Artist profile not found." });
+      return res.status(404).json({ message: "Artist profile not found." })
     }
 
-    res.status(200).json(updatedProfile);
+    res.status(200).json(updatedProfile)
   } catch (error) {
-    console.error("Error updating artist profile:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error updating artist profile:", error)
+    res.status(500).json({ message: "Internal server error." })
   }
-};
+}
 
 // Add portfolio item
 export const addPortfolioItem = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.userId
 
     // Verify user is adding to their own portfolio
     if (userId !== req.user._id.toString()) {
       return res
         .status(403)
-        .json({ message: "Not authorized to modify this portfolio" });
+        .json({ message: "Not authorized to modify this portfolio" })
     }
 
     const artist = await Artist.findOne({
       userId: new mongoose.Types.ObjectId(userId),
-    });
+    })
 
     if (!artist) {
-      return res.status(404).json({ message: "Artist profile not found." });
+      return res.status(404).json({ message: "Artist profile not found." })
     }
 
     // Validate required fields
     if (!req.body.imageUrl || !req.body.title) {
       return res
         .status(400)
-        .json({ message: "Image URL and title are required." });
+        .json({ message: "Image URL and title are required." })
     }
 
     // Sanitize and add the new item
     const newItem = {
       ...sanitizePortfolioItem(req.body),
       createdAt: new Date(),
-    };
+    }
 
-    artist.portfolioItems.push(newItem);
-    await artist.save();
+    artist.portfolioItems.push(newItem)
+    await artist.save()
 
     // Return populated artist data
     const populatedArtist = await Artist.findById(artist._id).populate({
       path: "userId",
       select: "name username avatarUrl location",
-    });
+    })
 
     res.status(201).json({
       message: "Portfolio item added successfully",
       portfolioItems: populatedArtist.portfolioItems,
-    });
+    })
   } catch (error) {
-    console.error("Error adding portfolio item:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error adding portfolio item:", error)
+    res.status(500).json({ message: "Internal server error." })
   }
-};
+}
 
 // Update portfolio item
 export const updatePortfolioItem = async (req, res) => {
   try {
-    const { userId, itemId } = req.params;
+    const { userId, itemId } = req.params
 
     // Verify user is updating their own portfolio
     if (userId !== req.user._id.toString()) {
       return res
         .status(403)
-        .json({ message: "Not authorized to modify this portfolio" });
+        .json({ message: "Not authorized to modify this portfolio" })
     }
 
     const artist = await Artist.findOne({
       userId: new mongoose.Types.ObjectId(userId),
-    });
+    })
 
     if (!artist) {
-      return res.status(404).json({ message: "Artist profile not found." });
+      return res.status(404).json({ message: "Artist profile not found." })
     }
 
     const itemIndex = artist.portfolioItems.findIndex(
       (item) => item._id.toString() === itemId
-    );
+    )
 
     if (itemIndex === -1) {
-      return res.status(404).json({ message: "Portfolio item not found." });
+      return res.status(404).json({ message: "Portfolio item not found." })
     }
 
     // Sanitize the updated data
     const sanitizedUpdate = sanitizePortfolioItem({
       ...artist.portfolioItems[itemIndex].toObject(),
       ...req.body,
-    });
+    })
 
     // Update the item
-    artist.portfolioItems[itemIndex] = sanitizedUpdate;
+    artist.portfolioItems[itemIndex] = sanitizedUpdate
 
-    await artist.save();
+    await artist.save()
 
     // Return populated artist data
     const populatedArtist = await Artist.findById(artist._id).populate({
       path: "userId",
       select: "name username avatarUrl location",
-    });
+    })
 
     res.json({
       message: "Portfolio item updated successfully",
       portfolioItems: populatedArtist.portfolioItems,
-    });
+    })
   } catch (error) {
-    console.error("Error updating portfolio item:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error updating portfolio item:", error)
+    res.status(500).json({ message: "Internal server error." })
   }
-};
+}
 
 // Delete portfolio item
 export const deletePortfolioItem = async (req, res) => {
   try {
-    const { userId, itemId } = req.params;
+    const { userId, itemId } = req.params
 
     // Verify user is deleting from their own portfolio
     if (userId !== req.user._id.toString()) {
       return res
         .status(403)
-        .json({ message: "Not authorized to modify this portfolio" });
+        .json({ message: "Not authorized to modify this portfolio" })
     }
 
     const artist = await Artist.findOne({
       userId: new mongoose.Types.ObjectId(userId),
-    });
+    })
 
     if (!artist) {
-      return res.status(404).json({ message: "Artist profile not found." });
+      return res.status(404).json({ message: "Artist profile not found." })
     }
 
-    const initialLength = artist.portfolioItems.length;
+    const initialLength = artist.portfolioItems.length
     artist.portfolioItems = artist.portfolioItems.filter(
       (item) => item._id.toString() !== itemId
-    );
+    )
 
     if (artist.portfolioItems.length === initialLength) {
-      return res.status(404).json({ message: "Portfolio item not found." });
+      return res.status(404).json({ message: "Portfolio item not found." })
     }
 
-    await artist.save();
+    await artist.save()
     res.json({
       message: "Portfolio item deleted successfully",
       remainingItems: artist.portfolioItems.length,
-    });
+    })
   } catch (error) {
-    console.error("Error deleting portfolio item:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error deleting portfolio item:", error)
+    res.status(500).json({ message: "Internal server error." })
   }
-};
+}
+
+export const getArtistStatistics = async (req, res) => {
+  try {
+    const artistProfile = await Artist.findOne({
+      userId: req.params.userId,
+    }).select("statistics")
+
+    if (!artistProfile) {
+      return res.status(404).json({ message: "Artist profile not found" })
+    }
+
+    const stats = {
+      activeApplications: artistProfile.statistics?.activeApplications || 0,
+      completedJobs: artistProfile.statistics?.completedJobs || 0,
+      averageRating: artistProfile.statistics?.averageRating || 0,
+    }
+
+    res.json(stats)
+  } catch (error) {
+    console.error("Error fetching artist statistics:", error)
+    res.status(500).json({ message: "Error fetching statistics" })
+  }
+}
 
 export default {
   getAllArtists,
@@ -378,4 +401,5 @@ export default {
   addPortfolioItem,
   updatePortfolioItem,
   deletePortfolioItem,
-};
+  getArtistStatistics,
+}

@@ -1,5 +1,6 @@
 // routes/UserRoutes/userRoutes.js
-import express from "express";
+import express from "express"
+import { protect, verifyRefreshToken } from "../../middleware/authMiddleware.js"
 import {
   updateUser,
   createUser,
@@ -8,23 +9,19 @@ import {
   loginUser,
   logoutUser,
   refreshToken,
-} from "../../controllers/Users/userController.js";
-import {
-  protect,
-  verifyRefreshToken,
-} from "../../middleware/authMiddleware.js";
+} from "../../controllers/Users/userController.js"
 
-const router = express.Router();
+const router = express.Router()
 
-// Public routes
-router.post("/login", loginUser);
-router.post("/register", createUser);
-router.post("/refresh-token", verifyRefreshToken, refreshToken);
-router.post("/logout", protect, logoutUser);
+// Public authentication routes
+router.post("/login", loginUser)
+router.post("/register", createUser)
+router.post("/refresh-token", verifyRefreshToken, refreshToken)
 
 // Protected routes
-router.get("/", protect, getAllUsers);
-router.get("/:id", protect, getUserById);
-router.put("/:id", protect, updateUser);
+router.post("/logout", protect, logoutUser)
+router.get("/", protect, getAllUsers)
+router.get("/:id", protect, getUserById)
+router.put("/:id", protect, updateUser)
 
-export default router;
+export default router

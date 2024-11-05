@@ -1,30 +1,51 @@
 import React, { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { loginUser } from "../redux/actions/userActions"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert } from "@/components/ui/alert"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [formError, setFormError] = useState("")
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading, error, user } = useSelector((state) => state.user)
+
+  // Update selector to use new auth state
+  const { loading, error, isAuthenticated } = useSelector((state) => state.user)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await dispatch(loginUser({ username, password }))
+    setFormError("") // Clear any previous form errors
+
+    if (!username.trim() || !password.trim()) {
+      setFormError("Please enter both username and password")
+      return
+    }
+
+    try {
+      await dispatch(loginUser({ username, password }))
+    } catch (err) {
+      setFormError("Login failed. Please try again.")
+    }
   }
 
+  // Update effect to use isAuthenticated instead of user object
   useEffect(() => {
-    if (user && !error) {
+    if (isAuthenticated) {
       navigate("/dashboard")
     }
-  }, [user, error, navigate])
+  }, [isAuthenticated, navigate])
 
   return (
     <div className='flex justify-center py-8'>
@@ -36,24 +57,33 @@ const Login = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
-            <div>
+            <div className='space-y-2'>
               <Input
                 type='text'
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder='Username'
                 required
+                disabled={loading}
+                className='w-full'
               />
             </div>
-            <div>
+            <div className='space-y-2'>
               <Input
                 type='password'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder='Password'
                 required
+                disabled={loading}
+                className='w-full'
               />
             </div>
+            {(error || formError) && (
+              <Alert variant='destructive'>
+                <AlertDescription>{error || formError}</AlertDescription>
+              </Alert>
+            )}
             <Button
               type='submit'
               disabled={loading}
@@ -61,9 +91,16 @@ const Login = () => {
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
-            {error && <Alert variant='destructive'>{error}</Alert>}
           </form>
         </CardContent>
+        <CardFooter className='flex justify-center'>
+          <p className='text-sm text-gray-600'>
+            Don't have an account?{" "}
+            <Link to='/register' className='text-blue-500 hover:text-blue-600'>
+              Register here
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

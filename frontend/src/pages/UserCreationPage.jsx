@@ -1,6 +1,6 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { registerUser } from "../redux/actions/userActions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,74 +11,97 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert } from "@/components/ui/alert"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 function UserCreationPage() {
   // Form state
-  const [username, setUsername] = useState("")
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [role, setRole] = useState("requester")
+  const [formData, setFormData] = useState({
+    username: "",
+    name: "",
+    email: "",
+    password: "",
+    role: "requester",
+  })
   const [formError, setFormError] = useState("")
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { loading, error, user } = useSelector((state) => state.user)
+  const { loading, error, isAuthenticated } = useSelector((state) => state.user)
 
-  // Only redirect if we have a user and no errors
-  React.useEffect(() => {
-    if (user && !error && !formError) {
+  // Redirect if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate("/dashboard")
     }
-  }, [user, error, formError, navigate])
+  }, [isAuthenticated, navigate])
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleRoleChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: value,
+    }))
+  }
+
+  const validateForm = () => {
+    if (!formData.username.trim()) {
+      setFormError("Username is required")
+      return false
+    }
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setFormError("Please enter a valid email address")
+      return false
+    }
+    if (formData.password.length < 8) {
+      setFormError("Password must be at least 8 characters long")
+      return false
+    }
+    return true
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setFormError("") // Clear any previous errors
+    setFormError("")
 
-    // Basic form validation
-    if (password.length < 8) {
-      setFormError("Password must be at least 8 characters long")
+    if (!validateForm()) {
       return
     }
 
     try {
-      const userData = {
-        username,
-        name,
-        email,
-        password,
-        role,
-      }
+      const result = await dispatch(registerUser(formData))
 
-      // Dispatch registration action
-      const result = await dispatch(registerUser(userData))
-
-      // Check if registration was successful
-      if (result.error) {
+      if (!result.success) {
         throw new Error(result.error)
       }
-
-      // Registration successful - useEffect will handle navigation
-      console.log("Registration successful")
     } catch (error) {
       console.error("Registration error:", error)
       setFormError(error.message || "Registration failed")
 
-      // Clear form on certain errors
+      // Clear fields on specific errors
       if (error.message.includes("already registered")) {
         if (error.message.includes("email")) {
-          setEmail("")
+          setFormData((prev) => ({ ...prev, email: "" }))
         } else if (error.message.includes("username")) {
-          setUsername("")
+          setFormData((prev) => ({ ...prev, username: "" }))
         }
       }
     }
   }
 
-  // Determine what error message to show
   const displayError = formError || error
 
   return (
@@ -86,7 +109,7 @@ function UserCreationPage() {
       <Card className='w-full max-w-md'>
         <CardHeader>
           <CardTitle className='text-center text-2xl font-bold'>
-            Create User
+            Create Account
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -94,9 +117,10 @@ function UserCreationPage() {
             <div>
               <Input
                 type='text'
+                name='username'
                 placeholder='Username'
-                value={username}
-                onChange={(e) => setUsername(e.target.value.trim())}
+                value={formData.username}
+                onChange={handleInputChange}
                 required
                 disabled={loading}
                 className={error?.includes("username") ? "border-red-500" : ""}
@@ -105,9 +129,10 @@ function UserCreationPage() {
             <div>
               <Input
                 type='text'
-                placeholder='Name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                name='name'
+                placeholder='Full Name'
+                value={formData.name}
+                onChange={handleInputChange}
                 required
                 disabled={loading}
               />
@@ -115,9 +140,10 @@ function UserCreationPage() {
             <div>
               <Input
                 type='email'
+                name='email'
                 placeholder='Email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value.trim())}
+                value={formData.email}
+                onChange={handleInputChange}
                 required
                 disabled={loading}
                 className={error?.includes("email") ? "border-red-500" : ""}
@@ -126,9 +152,10 @@ function UserCreationPage() {
             <div>
               <Input
                 type='password'
+                name='password'
                 placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleInputChange}
                 required
                 disabled={loading}
                 minLength={8}
@@ -138,7 +165,11 @@ function UserCreationPage() {
               />
             </div>
             <div>
-              <Select value={role} onValueChange={setRole} disabled={loading}>
+              <Select
+                value={formData.role}
+                onValueChange={handleRoleChange}
+                disabled={loading}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder='Select Role' />
                 </SelectTrigger>
@@ -148,6 +179,13 @@ function UserCreationPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {displayError && (
+              <Alert variant='destructive'>
+                <AlertDescription>{displayError}</AlertDescription>
+              </Alert>
+            )}
+
             <Button
               type='submit'
               disabled={loading}
@@ -155,14 +193,16 @@ function UserCreationPage() {
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
-
-            {displayError && (
-              <Alert variant='destructive' className='animate-shake'>
-                {displayError}
-              </Alert>
-            )}
           </form>
         </CardContent>
+        <CardFooter className='flex justify-center'>
+          <p className='text-sm text-gray-600'>
+            Already have an account?{" "}
+            <Link to='/login' className='text-blue-500 hover:text-blue-600'>
+              Login here
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

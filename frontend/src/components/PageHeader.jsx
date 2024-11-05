@@ -1,19 +1,119 @@
 import React from "react"
-import { Link, useNavigate } from "react-router-dom" // Add useNavigate
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { logoutUser } from "../redux/actions/userActions"
-import { LogOut, User } from "lucide-react"
+import { LogOut, User, LogIn } from "lucide-react"
 import { Button } from "./ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 import logo from "../assets/commission.svg"
 
 const PageHeader = () => {
-  const { user, loading, error } = useSelector((state) => state.user)
+  const { user, loading, error, isAuthenticated } = useSelector(
+    (state) => state.user
+  )
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const handleLogout = () => {
-    dispatch(logoutUser())
-    navigate("/")
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser())
+      navigate("/")
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
+  }
+
+  const handleLogin = () => {
+    navigate("/login", {
+      state: { from: location.pathname },
+    })
+  }
+
+  const handleProfile = () => {
+    navigate(`/profile/${user._id}`)
+  }
+
+  const handleDashboard = () => {
+    navigate("/dashboard")
+  }
+
+  const renderUserActions = () => {
+    if (loading) {
+      return <div className='animate-pulse bg-gray-200 h-8 w-24 rounded' />
+    }
+
+    if (error) {
+      return (
+        <span className='text-red-600 px-3 py-1 rounded-md bg-red-50'>
+          {error}
+        </span>
+      )
+    }
+
+    if (isAuthenticated && user) {
+      return (
+        <div className='flex items-center gap-4'>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' className='flex items-center gap-2'>
+                <div className='h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center'>
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.username}
+                      className='h-8 w-8 rounded-full object-cover'
+                      onError={(e) => {
+                        e.currentTarget.src = ""
+                        e.currentTarget.className = "hidden"
+                      }}
+                    />
+                  ) : (
+                    <User className='h-5 w-5 text-gray-600' />
+                  )}
+                </div>
+                <span className='font-medium text-gray-700 hidden sm:inline'>
+                  {user.username}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-56'>
+              <DropdownMenuItem onClick={handleDashboard}>
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfile}>
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className='text-red-600 focus:text-red-600 focus:bg-red-50'
+              >
+                <LogOut className='h-4 w-4 mr-2' />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    }
+
+    return (
+      <Button
+        onClick={handleLogin}
+        variant='ghost'
+        className='text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+      >
+        <LogIn className='h-5 w-5 mr-2' />
+        <span className='hidden sm:inline'>Login</span>
+      </Button>
+    )
   }
 
   return (
@@ -42,34 +142,7 @@ const PageHeader = () => {
         </Link>
 
         {/* User Actions */}
-        <div className='flex items-center gap-4'>
-          {loading ? (
-            <div className='animate-pulse bg-gray-200 h-8 w-24 rounded' />
-          ) : error ? (
-            <span className='text-red-600 px-3 py-1 rounded-md bg-red-50'>
-              {error}
-            </span>
-          ) : user ? (
-            <div className='flex items-center gap-4'>
-              <div className='flex items-center gap-2'>
-                <div className='h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center'>
-                  <User className='h-5 w-5 text-gray-600' />
-                </div>
-                <span className='font-medium text-gray-700 hidden sm:inline'>
-                  {user.username}
-                </span>
-              </div>
-              <Button
-                onClick={handleLogout}
-                variant='ghost'
-                className='text-gray-600 hover:text-red-600 hover:bg-red-50'
-              >
-                <LogOut className='h-5 w-5 mr-2' />
-                <span className='hidden sm:inline'>Logout</span>
-              </Button>
-            </div>
-          ) : null}
-        </div>
+        <div className='flex items-center gap-4'>{renderUserActions()}</div>
       </div>
     </header>
   )
