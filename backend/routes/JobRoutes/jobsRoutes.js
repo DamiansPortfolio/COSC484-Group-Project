@@ -1,5 +1,6 @@
-// routes/jobsRoutes.js
-import express from "express"
+// routes/JobRoutes/jobsRoutes.js
+import express from "express";
+import { protect, authorize } from "../../middleware/authMiddleware.js";
 import {
   getAllJobs,
   getJobById,
@@ -12,27 +13,34 @@ import {
   addMilestone,
   updateMilestone,
   searchJobs,
-} from "../../controllers/Jobs/jobController.js"
+} from "../../controllers/Jobs/jobController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-// Basic CRUD
-router.get("/", getAllJobs)
-router.get("/search", searchJobs)
-router.get("/:jobId", getJobById)
-router.post("/", createJob)
-router.put("/:jobId", updateJob)
-router.delete("/:jobId", deleteJob)
+// Public routes
+router.get("/", getAllJobs); // Public job listings
+router.get("/search", searchJobs);
+router.get("/:jobId", getJobById);
 
-// Applications
-router.post("/:jobId/apply", applyToJob)
-router.put("/:jobId/applications/:applicationId", updateApplication)
+// Protected routes
+router.use(protect);
 
-// Milestones
-router.post("/:jobId/milestones", addMilestone)
-router.put("/:jobId/milestones/:milestoneId", updateMilestone)
+// Requester-only routes
+router.post("/", authorize("requester"), createJob);
+router.put("/:jobId", authorize("requester"), updateJob);
+router.delete("/:jobId", authorize("requester"), deleteJob);
+router.post("/:jobId/milestones", authorize("requester"), addMilestone);
+router.put(
+  "/:jobId/milestones/:milestoneId",
+  authorize("requester"),
+  updateMilestone
+);
 
-// Jobs
-router.get("/artist/:artistId", getJobsByArtist)
+// Artist-only routes
+router.post("/:jobId/apply", authorize("artist"), applyToJob);
+router.get("/artist/:artistId", authorize("artist"), getJobsByArtist);
 
-export default router
+// Shared routes (both roles can access)
+router.put("/:jobId/applications/:applicationId", updateApplication);
+
+export default router;

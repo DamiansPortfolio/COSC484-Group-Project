@@ -21,6 +21,6 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: "production"
-          MONGODB_URI: "mongodb+srv://damian-admin:FRte93bxoRcibwTp@production-cluster.u37gt.mongodb.net/user_management?retryWrites=true&w=majority&appName=production-cluster"
+          MONGODB_URI: "mongodb+srv://damian-admin:vn6NOD7Wvj6uMuQ1@production-cluster.u37gt.mongodb.net/user_management?retryWrites=true&w=majority&appName=production-cluster"
           DB_USERS: "user_management"
           FRONTEND_URL: "*"

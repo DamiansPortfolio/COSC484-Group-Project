@@ -1,27 +1,30 @@
-import express from "express"
+// routes/UserRoutes/userRoutes.js
+import express from "express";
 import {
   updateUser,
   createUser,
   getAllUsers,
   getUserById,
   loginUser,
-} from "../../controllers/Users/userController.js"
+  logoutUser,
+  refreshToken,
+} from "../../controllers/Users/userController.js";
+import {
+  protect,
+  verifyRefreshToken,
+} from "../../middleware/authMiddleware.js";
 
-const router = express.Router()
+const router = express.Router();
 
-// POST route for logging in a user
-router.post("/login", loginUser)
+// Public routes
+router.post("/login", loginUser);
+router.post("/register", createUser);
+router.post("/refresh-token", verifyRefreshToken, refreshToken);
+router.post("/logout", protect, logoutUser);
 
-// POST route for creating a user
-router.post("/register", createUser)
+// Protected routes
+router.get("/", protect, getAllUsers);
+router.get("/:id", protect, getUserById);
+router.put("/:id", protect, updateUser);
 
-// GET route for retrieving all users
-router.get("/", getAllUsers)
-
-// GET route for retrieving a user by their ID
-router.get("/:id", getUserById)
-
-// PUT route for updating user
-router.put("/:id", updateUser)
-
-export default router
+export default router;

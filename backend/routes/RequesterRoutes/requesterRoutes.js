@@ -1,5 +1,6 @@
-// routes/requesterRoutes.js
-import express from "express"
+// routes/RequesterRoutes/requesterRoutes.js
+import express from "express";
+import { protect, authorize } from "../../middleware/authMiddleware.js";
 import {
   getAllRequesters,
   getRequesterProfile,
@@ -10,25 +11,22 @@ import {
   getRequesterStats,
   getRequesterJobs,
   addReview,
-} from "../../controllers/Requesters/requesterController.js"
+} from "../../controllers/Requesters/requesterController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-// Profile management
-router.get("/", getAllRequesters)
-router.get("/:userId", getRequesterProfile)
-router.put("/:userId", updateRequesterProfile)
+// All requester routes need both authentication and requester role
+router.use(protect);
+router.use(authorize("requester"));
 
-// Payment methods
-router.post("/:userId/payment-methods", addPaymentMethod)
-router.delete("/:userId/payment-methods/:methodId", removePaymentMethod)
+router.get("/", getAllRequesters);
+router.get("/:userId", getRequesterProfile);
+router.put("/:userId", updateRequesterProfile);
+router.post("/:userId/payment-methods", addPaymentMethod);
+router.delete("/:userId/payment-methods/:methodId", removePaymentMethod);
+router.put("/:userId/preferences", updatePreferences);
+router.get("/:userId/statistics", getRequesterStats);
+router.get("/:userId/jobs", getRequesterJobs);
+router.post("/:userId/reviews", addReview);
 
-// Preferences and stats
-router.put("/:userId/preferences", updatePreferences)
-router.get("/:userId/statistics", getRequesterStats)
-router.get("/:userId/jobs", getRequesterJobs)
-
-// Reviews
-router.post("/:userId/reviews", addReview)
-
-export default router
+export default router;

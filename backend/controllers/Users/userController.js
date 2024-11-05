@@ -1,276 +1,333 @@
-import User from "../../models/UserModels/UserSchema.js"
-import ArtistProfile from "../../models/ArtistModels/ArtistSchema.js"
-import RequesterProfile from "../../models/RequesterModels/RequesterSchema.js"
+import User from "../../models/UserModels/UserSchema.js";
+import ArtistProfile from "../../models/ArtistModels/ArtistSchema.js";
+import RequesterProfile from "../../models/RequesterModels/RequesterSchema.js";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
-import bcrypt from "bcryptjs" // Use bcryptjs
-import jwt from "jsonwebtoken"
+// Utility function to generate tokens
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign({ id: userId }, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: "15m",
+  });
 
-// Create a new user and associated profiles based on the role
+  const refreshToken = jwt.sign(
+    { id: userId },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+// Utility function to set secure cookies
+const setTokenCookies = (res, accessToken, refreshToken) => {
+  // Access token cookie - short lived
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+
+  // Refresh token cookie - longer lived
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/api/refresh-token", // Only sent to refresh endpoint
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+};
+
+// Create a new user
 export const createUser = async (req, res) => {
-  const requestBody = req.body
-  console.log("Incoming request body:", requestBody)
+  const requestBody = req.body;
+  console.log("Incoming request body:", requestBody);
 
   try {
-    const { username, name, email, password, role, skills } = requestBody
+    const { username, name, email, password, role, skills } = requestBody;
 
-    // Check if all required fields are provided
-    if (!username || !name || !email || !password || !role) {
-      console.warn("Validation failed: Missing required fields", {
-        username,
-        name,
-        email,
-        password: password ? "provided" : "missing",
-        role,
-      })
-      return res.status(400).json({ message: "All fields are required." })
+    // Enhanced validation
+    if (
+      !username?.trim() ||
+      !name?.trim() ||
+      !email?.trim() ||
+      !password ||
+      !role
+    ) {
+      return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Check if the username or email already exists
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    // Validate password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
+      });
+    }
+
+    // Check existing user
     const existingUser = await User.findOne({
-      $or: [{ username: username }, { email: email }],
-    })
+      $or: [
+        { username: username.toLowerCase() },
+        { email: email.toLowerCase() },
+      ],
+    });
 
     if (existingUser) {
-      const field = existingUser.username === username ? "username" : "email"
-      return res.status(400).json({
-        message: `This ${field} is already registered.`,
-      })
+      const field =
+        existingUser.username.toLowerCase() === username.toLowerCase()
+          ? "username"
+          : "email";
+      return res
+        .status(400)
+        .json({ message: `This ${field} is already registered.` });
     }
 
-    // Create the user
+    // Create verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Create user with verification token
     const user = new User({
-      username,
+      username: username.toLowerCase(),
       name,
-      email,
+      email: email.toLowerCase(),
       role,
-      password, // This will trigger the virtual setter
-    })
+      password,
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: verificationExpires,
+    });
 
-    console.log("User object before save:", {
-      ...user.toObject(),
-      passwordHash: user.passwordHash ? "exists" : "missing",
-    })
+    await user.save();
 
-    // Save the user
-    await user.save()
-    console.log("User created successfully:", { userId: user._id, username })
-
-    // Generate JWT token for the new user
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    })
-
-    // Create associated profile based on user role
+    // Create profile based on role
     if (role === "artist") {
-      try {
-        const artistProfile = new ArtistProfile({
-          userId: user._id,
-          portfolioItems: [],
-          skills: {
-            primary: skills?.primary || [],
-            secondary: skills?.secondary || [],
-          },
-          bio: "",
-          socialLinks: { website: "", instagram: "" },
-          reviews: [],
-          averageRating: 0,
-        })
-        await artistProfile.save()
-        console.log("Artist profile created successfully for user:", {
-          userId: user._id,
-        })
-      } catch (profileError) {
-        console.error("Error creating artist profile:", profileError)
-        await User.findByIdAndDelete(user._id)
-        return res.status(400).json({
-          message: "Error creating artist profile.",
-          error: profileError.message,
-        })
-      }
+      const artistProfile = new ArtistProfile({
+        userId: user._id,
+        skills: {
+          primary: skills?.primary || [],
+          secondary: skills?.secondary || [],
+        },
+      });
+      await artistProfile.save();
     } else if (role === "requester") {
-      try {
-        const requesterProfile = new RequesterProfile({
-          userId: user._id,
-          company: requestBody.company || "",
-          industry: requestBody.industry || "",
-          jobsPosted: [],
-          activeJobs: [],
-          completedJobs: [],
-          preferences: {
-            jobAlerts: true,
-            emailNotifications: true,
-            visibility: "public",
-          },
-          statistics: {
-            totalJobsPosted: 0,
-            totalHires: 0,
-            averageRating: 0,
-            responseRate: 0,
-          },
-          verificationStatus: "pending",
-          notifications: [],
-          reviews: [],
-          favoriteArtists: [],
-        })
-        await requesterProfile.save()
-        console.log("Requester profile created successfully for user:", {
-          userId: user._id,
-        })
-      } catch (profileError) {
-        console.error("Error creating requester profile:", profileError)
-        await User.findByIdAndDelete(user._id)
-        return res.status(400).json({
-          message: "Error creating requester profile.",
-          error: profileError.message,
-        })
-      }
+      const requesterProfile = new RequesterProfile({
+        userId: user._id,
+        company: requestBody.company || "",
+      });
+      await requesterProfile.save();
     }
 
-    // Respond with the created user information and token
-    const userData = user.toObject()
-    delete userData.passwordHash
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user._id);
+
+    // Store refresh token
+    await user.addRefreshToken(refreshToken, req.get("User-Agent"));
+
+    // Set secure cookies
+    setTokenCookies(res, accessToken, refreshToken);
+
+    // Send verification email (implement this based on your email service)
+    // await sendVerificationEmail(user.email, verificationToken)
+
+    // Return user data (excluding sensitive information)
+    const userData = user.toObject();
+    delete userData.passwordHash;
+    delete userData.emailVerificationToken;
+    delete userData.refreshTokens;
 
     res.status(201).json({
       user: userData,
-      token,
-      message: "User created successfully.",
-    })
+      message: "User created successfully. Please verify your email.",
+    });
   } catch (error) {
-    console.error("Error creating user:", {
-      message: error.message,
-      stack: error.stack,
-      requestBody: {
-        ...requestBody,
-        password: requestBody.password ? "provided" : "missing",
-      },
-    })
-
-    // Handle MongoDB duplicate key errors
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0]
-      return res.status(400).json({
-        message: `This ${field} is already registered.`,
-      })
-    }
-
+    console.error("Error creating user:", error);
     res.status(500).json({
       message: "Failed to create user.",
-      error: error.message,
-    })
+      error: process.env.NODE_ENV === "production" ? null : error.message,
+    });
   }
-}
+};
 
-// Get all users
-export const getAllUsers = async (req, res) => {
-  try {
-    console.log("Attempting to fetch all users...")
-    const users = await User.find().select("-passwordHash")
-    console.log(`Found ${users.length} users`)
-    res.status(200).json(users)
-  } catch (error) {
-    console.error("Error fetching users:", error)
-    res.status(500).json({
-      message: "Internal server error.",
-      error: error.message, // Add this for debugging
-    })
-  }
-}
-
-// Get a user by ID
-export const getUserById = async (req, res) => {
-  const userId = req.params.id
-  try {
-    const user = await User.findById(userId).select("-passwordHash") // Exclude passwordHash from response
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." })
-    }
-
-    res.status(200).json(user)
-  } catch (error) {
-    console.error("Error fetching user:", error)
-    res.status(500).json({ message: "Internal server error." })
-  }
-}
-
-// Update a user
-export const updateUser = async (req, res) => {
-  const userId = req.params.id
-  try {
-    const updatedData = req.body
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
-      new: true,
-    }).select("-passwordHash") // Exclude passwordHash from response
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found." })
-    }
-
-    res.status(200).json(updatedUser)
-  } catch (error) {
-    console.error("Error updating user:", error)
-    res.status(500).json({ message: "Internal server error." })
-  }
-}
-
-// Delete a user
-export const deleteUser = async (req, res) => {
-  const userId = req.params.id
-  try {
-    await ArtistProfile.deleteOne({ userId })
-    await RequesterProfile.deleteOne({ userId })
-
-    const deletedUser = await User.findByIdAndDelete(userId)
-
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found." })
-    }
-
-    res.status(200).json({ message: "User deleted successfully." })
-  } catch (error) {
-    console.error("Error deleting user:", error)
-    res.status(500).json({ message: "Internal server error." })
-  }
-}
-
-// Login user
 // Login user
 export const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body
+    const { username, password } = req.body;
 
-    // Find user by username
-    const user = await User.findOne({ username })
+    if (!username?.trim() || !password) {
+      return res
+        .status(400)
+        .json({ message: "Username and password are required." });
+    }
+
+    const user = await User.findOne({ username: username.toLowerCase() });
     if (!user) {
-      return res.status(404).json({ message: "User not found." })
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.passwordHash) // This remains unchanged
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid password." })
+    try {
+      await user.comparePassword(password);
+    } catch (error) {
+      return res.status(401).json({ message: error.message });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    })
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in.",
+        isEmailVerified: false,
+      });
+    }
 
-    // Exclude the password from the response
-    const { passwordHash, ...userData } = user.toObject()
-    res.status(200).json({ user: userData, token })
+    if (!user.active) {
+      return res.status(403).json({ message: "Account is deactivated." });
+    }
+
+    // Generate new tokens
+    const { accessToken, refreshToken } = generateTokens(user._id);
+
+    // Store refresh token
+    await user.addRefreshToken(refreshToken, req.get("User-Agent"));
+
+    // Set secure cookies
+    setTokenCookies(res, accessToken, refreshToken);
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Return user data
+    const userData = user.toObject();
+    delete userData.passwordHash;
+    delete userData.refreshTokens;
+
+    res.status(200).json({
+      user: userData,
+      message: "Login successful",
+    });
   } catch (error) {
-    console.error("Error logging in user:", error)
-    res.status(500).json({ message: "Internal server error." })
+    console.error("Login error:", error);
+    res.status(500).json({
+      message: "Internal server error.",
+      error: process.env.NODE_ENV === "production" ? null : error.message,
+    });
   }
-}
+};
+
+// Logout user
+export const logoutUser = async (req, res) => {
+  try {
+    // Clear cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    // If we have the user's refresh token, remove it from their tokens list
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken && req.user) {
+      const user = await User.findById(req.user.id);
+      if (user) {
+        user.refreshTokens = user.refreshTokens.filter(
+          (t) => t.token !== refreshToken
+        );
+        await user.save();
+      }
+    }
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Error during logout" });
+  }
+};
+
+// Refresh token
+export const refreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user || !(await user.validateRefreshToken(refreshToken))) {
+      return res.status(401).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate new tokens
+    const tokens = generateTokens(user._id);
+
+    // Update refresh token
+    await user.addRefreshToken(tokens.refreshToken, req.get("User-Agent"));
+
+    // Set new cookies
+    setTokenCookies(res, tokens.accessToken, tokens.refreshToken);
+
+    res.status(200).json({ message: "Token refreshed successfully" });
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
+// Update user (protected route)
+export const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Ensure user can only update their own profile
+    if (req.user.id !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this user" });
+    }
+
+    const updates = req.body;
+
+    // Prevent updating sensitive fields
+    delete updates.password;
+    delete updates.passwordHash;
+    delete updates.emailVerificationToken;
+    delete updates.refreshTokens;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      {
+        new: true,
+        runValidators: true,
+        select: "-passwordHash -refreshTokens -emailVerificationToken",
+      }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({
+      message: "Error updating user",
+      error: process.env.NODE_ENV === "production" ? null : error.message,
+    });
+  }
+};
 
 export default {
   createUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-  deleteUser,
   loginUser,
-}
+  logoutUser,
+  refreshToken,
+  updateUser,
+};

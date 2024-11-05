@@ -1,5 +1,6 @@
-// routes/artistRoutes.js
-import express from "express"
+// routes/ArtistRoutes/artistRoutes.js
+import express from "express";
+import { protect, authorize } from "../../middleware/authMiddleware.js";
 import {
   getAllArtists,
   getArtistProfile,
@@ -7,22 +8,21 @@ import {
   addPortfolioItem,
   updatePortfolioItem,
   deletePortfolioItem,
-} from "../../controllers/Artists/artistController.js"
+} from "../../controllers/Artists/artistController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-// Get all artists
-router.get("/", getAllArtists)
+// Public routes (if any)
+router.get("/", getAllArtists); // This might be public to showcase artists
 
-// Get artist profile by user ID
-router.get("/:userId", getArtistProfile)
+// Protected routes need both authentication and artist role
+router.use(protect);
+router.use(authorize("artist"));
 
-// Update artist profile
-router.put("/:userId", updateArtistProfile)
+router.get("/:userId", getArtistProfile);
+router.put("/:userId", updateArtistProfile);
+router.post("/:userId/portfolio", addPortfolioItem);
+router.put("/:userId/portfolio/:itemId", updatePortfolioItem);
+router.delete("/:userId/portfolio/:itemId", deletePortfolioItem);
 
-// Portfolio item routes
-router.post("/:userId/portfolio", addPortfolioItem)
-router.put("/:userId/portfolio/:itemId", updatePortfolioItem)
-router.delete("/:userId/portfolio/:itemId", deletePortfolioItem)
-
-export default router
+export default router;
