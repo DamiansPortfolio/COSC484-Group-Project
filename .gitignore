@@ -66,3 +66,5 @@ debug/
 # Local development files
 *.dev.*
 local.*
+
+.yaml
