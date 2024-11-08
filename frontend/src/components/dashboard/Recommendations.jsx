@@ -20,37 +20,45 @@ import {
 } from "../../components/ui/dropdown-menu"
 import { Link } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 
 const ArtistCard = ({ artist }) => (
-  <Card key={artist._id}>
+  <Card key={artist._id} className='hover:shadow-lg transition-shadow'>
     <CardContent className='p-4'>
       <h3 className='font-semibold mb-2'>
-        <Link to={`/profile/${artist.userId._id}`}>
+        <Link
+          to={`/profile/${artist.userId._id}`}
+          className='hover:text-blue-600'
+        >
           {artist.userId?.name || "Unknown Artist"}
         </Link>
       </h3>
-      <p className='text-sm text-gray-600'>
-        Primary Skills:{" "}
-        {artist.skills?.primary?.map((skill) => skill.name).join(", ") ||
-          "No skills listed"}
-      </p>
-      {artist.skills?.secondary?.length > 0 && (
-        <p className='text-sm text-gray-500'>
-          Secondary: {artist.skills.secondary.join(", ")}
+      <div className='space-y-2'>
+        <p className='text-sm text-gray-600'>
+          Primary Skills:{" "}
+          {artist.skills?.primary?.map((skill) => (
+            <Badge key={skill.name} variant='outline' className='mr-1'>
+              {skill.name}
+            </Badge>
+          ))}
         </p>
-      )}
-      <p className='text-sm text-yellow-500'>
-        Rating: {artist.averageRating?.toFixed(1) || "0.0"} ★
-      </p>
-      {artist.userId?.location && (
-        <p className='text-sm text-gray-500'>{artist.userId.location}</p>
-      )}
+        <p className='text-sm text-yellow-500 flex items-center'>
+          <span className='mr-1'>Rating:</span>
+          <span className='font-medium'>
+            {artist.averageRating?.toFixed(1) || "N/A"}
+          </span>
+          <span className='ml-1'>★</span>
+        </p>
+        {artist.userId?.location && (
+          <p className='text-sm text-gray-500'>{artist.userId.location}</p>
+        )}
+      </div>
     </CardContent>
   </Card>
 )
 
 const LoadingSkeleton = () => (
-  <div className='grid grid-cols-2 gap-4'>
+  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
     {[1, 2, 3, 4].map((n) => (
       <Card key={n}>
         <CardContent className='p-4'>
@@ -65,11 +73,13 @@ const LoadingSkeleton = () => (
 
 const Recommendations = () => {
   const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.user)
   const { artists, loading, selectedSkill, sortOption } = useSelector(
     (state) => state.recommendations
   )
 
   useEffect(() => {
+    // Using existing fetchRecommendations action that fetches artists
     dispatch(fetchRecommendations())
   }, [dispatch])
 
@@ -88,9 +98,9 @@ const Recommendations = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recommended for You</CardTitle>
+          <CardTitle>Recommended Artists</CardTitle>
         </CardHeader>
-        <CardContent className='mb-4'>
+        <CardContent>
           <LoadingSkeleton />
         </CardContent>
       </Card>
@@ -100,13 +110,13 @@ const Recommendations = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recommended for You</CardTitle>
+        <CardTitle>Recommended Artists</CardTitle>
       </CardHeader>
 
-      <CardContent className='mb-4'>
+      <CardContent>
         <div className='flex space-x-4 mb-4'>
           <DropdownMenu>
-            <DropdownMenuTrigger className='p-2 bg-gray-200 rounded-md'>
+            <DropdownMenuTrigger className='p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors'>
               Filter by Skill
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -125,24 +135,24 @@ const Recommendations = () => {
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className='p-2 bg-gray-200 rounded-md'>
+            <DropdownMenuTrigger className='p-2 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors'>
               Sort By
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => dispatch(setSortOption("name"))}>
-                Name
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => dispatch(setSortOption("rating"))}
               >
                 Rating
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => dispatch(setSortOption("name"))}>
+                Name
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <ScrollArea className='h-80'>
-          <CardContent className='grid grid-cols-2 gap-4'>
+        <ScrollArea className='h-[calc(100vh-300px)]'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 p-1'>
             {artists
               .filter((artist) =>
                 selectedSkill
@@ -165,7 +175,7 @@ const Recommendations = () => {
               .map((artist) => (
                 <ArtistCard key={artist._id} artist={artist} />
               ))}
-          </CardContent>
+          </div>
         </ScrollArea>
       </CardContent>
     </Card>

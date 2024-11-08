@@ -393,6 +393,54 @@ export const getArtistStatistics = async (req, res) => {
   }
 }
 
+export const getArtistActivities = async (req, res) => {
+  try {
+    const userId = req.params.userId
+
+    // Get the artist's profile and related data
+    const [artistProfile, jobs] = await Promise.all([
+      Artist.findOne({ userId }).populate("reviews"),
+      Job.find({ "applications.artistId": userId }),
+    ])
+
+    if (!artistProfile) {
+      return res.status(404).json({ message: "Artist profile not found" })
+    }
+
+    // Collect activities from existing data
+    const activities = [
+      // From job applications
+      ...jobs.map((job) => ({
+        _id: job._id,
+        type: "application_submitted",
+        description: `Applied to job: ${job.title}`,
+        createdAt:
+          job.applications.find(
+            (app) => app.artistId.toString() === artistProfile._id.toString()
+          )?.appliedAt || job.createdAt,
+      })),
+
+      // From reviews received
+      ...artistProfile.reviews.map((review) => ({
+        _id: review._id,
+        type: "review_received",
+        description: `Received a ${review.rating}-star review: "${review.comment}"`,
+        createdAt: review.createdAt,
+      })),
+    ]
+
+    // Sort by date and limit to 10 most recent
+    const sortedActivities = activities
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10)
+
+    res.json(sortedActivities)
+  } catch (error) {
+    console.error("Error fetching artist activities:", error)
+    res.status(500).json({ message: "Error fetching activities" })
+  }
+}
+
 export default {
   getAllArtists,
   getRecommendations,
@@ -402,4 +450,5 @@ export default {
   updatePortfolioItem,
   deletePortfolioItem,
   getArtistStatistics,
+  getArtistActivities,
 }

@@ -13,28 +13,28 @@ const Dashboard = () => {
   const renderDashboard = () => {
     if (loading) {
       return (
-        <Card className="w-full h-48 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <Card className='w-full h-48 flex items-center justify-center'>
+          <Loader2 className='h-8 w-8 animate-spin' />
         </Card>
       )
     }
 
-    if (user?.role === 'artist') {
+    if (user?.role === "artist") {
       return (
         <div className='space-y-6'>
-          <QuickStats userRole="artist" />
-          <RecentActivity activityType="applications" />
-          <Recommendations type="jobs" />
+          <QuickStats userRole='artist' />
+          <RecentActivity activityType='applications' />
+          <Recommendations type='jobs' />
         </div>
       )
     }
 
-    if (user?.role === 'requester') {
+    if (user?.role === "requester") {
       return (
         <div className='space-y-6'>
-          <QuickStats userRole="requester" />
-          <RecentActivity activityType="job-posts" />
-          <Recommendations type="artists" />
+          <QuickStats userRole='requester' />
+          <RecentActivity activityType='job-posts' />
+          <Recommendations type='artists' />
         </div>
       )
     }
@@ -52,15 +52,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {user?.name || 'User'}
+    <div className='min-h-[calc(100vh-4rem)]'>
+      <header className='mb-8'>
+        <h1 className='text-2xl font-bold text-gray-900'>
+          Welcome back, {user?.name || "User"}
         </h1>
-        <p className="text-gray-600">
-          {user?.role === 'artist' 
-            ? 'Here's what's happening with your applications'
-            : 'Here's what's happening with your job posts'}
+        <p className='text-gray-600'>
+          {user?.role === "artist"
+            ? `Here's what's happening with your applications`
+            : `Here's what's happening with your job posts`}
         </p>
       </header>
 

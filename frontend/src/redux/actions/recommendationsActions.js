@@ -1,12 +1,11 @@
-// actions/recommendationActions.js
-import { api } from "./userActions" // Import the axios instance we created
+import { api } from "./userActions"
 
 export const fetchRecommendations = () => {
   return async (dispatch) => {
     dispatch({ type: "FETCH_RECOMMENDATIONS_REQUEST" })
 
     try {
-      const { data } = await api.get("/artists") // Use our configured axios instance
+      const { data } = await api.get("/artists")
 
       dispatch({
         type: "FETCH_RECOMMENDATIONS_SUCCESS",

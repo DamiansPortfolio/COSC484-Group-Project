@@ -25,8 +25,12 @@ export const registerUser = (userData) => {
   return async (dispatch) => {
     dispatch({ type: USER_REGISTER_REQUEST })
 
+    console.log("Registering user with data:", userData) // Debugging log
+
     try {
       const { data } = await api.post("/users/register", userData)
+
+      console.log("Registration successful:", data) // Debugging log
 
       dispatch({
         type: USER_REGISTER_SUCCESS,
@@ -35,6 +39,7 @@ export const registerUser = (userData) => {
 
       return { success: true, data }
     } catch (error) {
+      console.error("Registration error:", error) // Debugging log
       const message = error.response?.data?.message || error.message
       dispatch({
         type: USER_REGISTER_FAIL,
@@ -50,14 +55,19 @@ export const loginUser = (userData) => {
   return async (dispatch) => {
     dispatch({ type: USER_LOGIN_REQUEST })
 
+    console.log("Logging in user with data:", userData) // Debugging log
+
     try {
       const { data } = await api.post("/users/login", userData)
+
+      console.log("Login successful:", data) // Debugging log
 
       dispatch({
         type: USER_LOGIN_SUCCESS,
         payload: { user: data.user },
       })
     } catch (error) {
+      console.error("Login error:", error) // Debugging log
       const message = error.response?.data?.message || error.message
       dispatch({
         type: USER_LOGIN_FAIL,
@@ -73,8 +83,9 @@ export const logoutUser = () => {
     try {
       await api.post("/users/logout")
       dispatch({ type: USER_LOGOUT })
+      console.log("User logged out successfully") // Debugging log
     } catch (error) {
-      console.error("Logout error:", error)
+      console.error("Logout error:", error) // Debugging log
       // Still logout the user on the frontend even if the backend call fails
       dispatch({ type: USER_LOGOUT })
     }
@@ -90,9 +101,10 @@ export const refreshToken = () => {
         type: USER_REFRESH_TOKEN_SUCCESS,
         payload: { user: data.user },
       })
+      console.log("Token refreshed successfully:", data) // Debugging log
       return true
     } catch (error) {
-      console.error("Token refresh error:", error)
+      console.error("Token refresh error:", error) // Debugging log
       dispatch({ type: USER_LOGOUT })
       return false
     }
@@ -101,8 +113,12 @@ export const refreshToken = () => {
 
 // Axios response interceptor for token refresh
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("API response:", response) // Debugging log
+    return response
+  },
   async (error) => {
+    console.error("API error:", error) // Debugging log
     const originalRequest = error.config
 
     // If the error is 401 and we haven't retried yet
@@ -114,9 +130,11 @@ api.interceptors.response.use(
         const refreshed = await store.dispatch(refreshToken())
         if (refreshed) {
           // Retry the original request
+          console.log("Retrying original request after token refresh") // Debugging log
           return api(originalRequest)
         }
       } catch (refreshError) {
+        console.error("Error during token refresh:", refreshError) // Debugging log
         return Promise.reject(refreshError)
       }
     }

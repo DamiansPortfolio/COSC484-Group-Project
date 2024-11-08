@@ -1,26 +1,37 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for backend API (no auth)
+Description: A simple API with Lambda functions
 
 Resources:
-  BackendApi:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'" # Allows all origins. Change to specific domains in production.
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'" # Allowed methods
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'" # Add any other headers your requests might use
+
+  MyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: lambda.handler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 512
-      Timeout: 30
+      Handler: lambda.handler # Ensure this matches your lambda.js file
+      Runtime: nodejs18.x # Ensure this matches your Node.js version
+      CodeUri: ./ # Path to your lambda.js file
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        # Remove FRONTEND_URL since it's not yet defined
+        # Add other environment variables as needed
       Events:
-        AnyApiEvent:
+        ApiEvent:
           Type: Api
           Properties:
-            Path: /{proxy+}
-            Method: ANY
-      Environment:
-        Variables:
-          NODE_ENV: "production"
-          MONGODB_URI: "mongodb+srv://damian-admin:vn6NOD7Wvj6uMuQ1@production-cluster.u37gt.mongodb.net/user_management?retryWrites=true&w=majority&appName=production-cluster"
-          DB_USERS: "user_management"
-          FRONTEND_URL: "*"
+            RestApiId: !Ref MyApi
+            Path: /your-endpoint # Define your endpoint here
+            Method: ANY # This allows all HTTP methods
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/api/Prod/"

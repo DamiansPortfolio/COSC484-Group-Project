@@ -1,10 +1,10 @@
 // recommendationsReducer.js
 const initialState = {
-  artists: [],
+  items: [],
   loading: false,
   error: null,
   selectedSkill: "",
-  sortOption: "rating",
+  sortOption: "recent",
 }
 
 const recommendationsReducer = (state = initialState, action) => {
@@ -18,7 +18,7 @@ const recommendationsReducer = (state = initialState, action) => {
     case "FETCH_RECOMMENDATIONS_SUCCESS":
       return {
         ...state,
-        artists: action.payload,
+        items: action.payload,
         loading: false,
         error: null,
       }
@@ -27,7 +27,7 @@ const recommendationsReducer = (state = initialState, action) => {
         ...state,
         error: action.payload,
         loading: false,
-        artists: [],
+        items: [],
       }
     case "SET_SELECTED_SKILL":
       return {

@@ -394,6 +394,61 @@ export const getRequesterStatistics = async (req, res) => {
   }
 }
 
+export const getRequesterActivities = async (req, res) => {
+  try {
+    const userId = req.params.userId
+
+    // Get the requester's profile and related data
+    const [requesterProfile, jobs] = await Promise.all([
+      Requester.findOne({ userId }).populate("reviews"),
+      Job.find({ requesterId: userId }).populate("applications.artistId"),
+    ])
+
+    if (!requesterProfile) {
+      return res.status(404).json({ message: "Requester profile not found" })
+    }
+
+    // Collect activities from existing data
+    const activities = [
+      // From jobs posted
+      ...jobs.map((job) => ({
+        _id: job._id,
+        type: "job_posted",
+        description: `Posted new job: "${job.title}"`,
+        createdAt: job.createdAt,
+      })),
+
+      // From applications received
+      ...jobs.flatMap((job) =>
+        job.applications.map((app) => ({
+          _id: app._id,
+          type: "application_received",
+          description: `Received application for "${job.title}"`,
+          createdAt: app.appliedAt,
+        }))
+      ),
+
+      // From reviews received
+      ...requesterProfile.reviews.map((review) => ({
+        _id: review._id,
+        type: "review_received",
+        description: `Received a ${review.rating}-star review`,
+        createdAt: review.createdAt,
+      })),
+    ]
+
+    // Sort by date and limit to 10 most recent
+    const sortedActivities = activities
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10)
+
+    res.json(sortedActivities)
+  } catch (error) {
+    console.error("Error fetching requester activities:", error)
+    res.status(500).json({ message: "Error fetching activities" })
+  }
+}
+
 export default {
   getAllRequesters,
   getRequesterProfile,
@@ -405,4 +460,5 @@ export default {
   getRequesterJobs,
   addReview,
   getRequesterStatistics,
+  getRequesterActivities,
 }
