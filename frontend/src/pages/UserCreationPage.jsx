@@ -1,3 +1,4 @@
+// UserCreationPage.jsx
 import React, { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, Link } from "react-router-dom"
@@ -20,8 +21,18 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-function UserCreationPage() {
-  // Form state
+/**
+ * User Registration Component
+ *
+ * Handles new user account creation with role selection.
+ * Features:
+ * - Complete form validation
+ * - Error handling and display
+ * - Role selection (Artist/Requester)
+ * - Password requirements
+ * - Automatic redirection after registration
+ */
+const UserCreationPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     name: "",
@@ -35,7 +46,6 @@ function UserCreationPage() {
   const dispatch = useDispatch()
   const { loading, error, isAuthenticated } = useSelector((state) => state.user)
 
-  // Redirect if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard")
@@ -83,26 +93,26 @@ function UserCreationPage() {
 
     try {
       const result = await dispatch(registerUser(formData))
-
       if (!result.success) {
-        throw new Error(result.error)
+        setFormError(
+          result.error || "Unable to create account. Please try again."
+        )
       }
     } catch (error) {
-      console.error("Registration error:", error)
-      setFormError(error.message || "Registration failed")
+      setFormError(
+        error.response?.data?.message ||
+          "Unable to create account. Please try again."
+      )
 
-      // Clear fields on specific errors
-      if (error.message.includes("already registered")) {
-        if (error.message.includes("email")) {
+      if (error.response?.data?.message?.includes("already exists")) {
+        if (error.response.data.message.includes("email")) {
           setFormData((prev) => ({ ...prev, email: "" }))
-        } else if (error.message.includes("username")) {
+        } else if (error.response.data.message.includes("username")) {
           setFormData((prev) => ({ ...prev, username: "" }))
         }
       }
     }
   }
-
-  const displayError = formError || error
 
   return (
     <div className='flex justify-center py-8'>
@@ -114,82 +124,67 @@ function UserCreationPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
-            <div>
-              <Input
-                type='text'
-                name='username'
-                placeholder='Username'
-                value={formData.username}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                className={error?.includes("username") ? "border-red-500" : ""}
-              />
-            </div>
-            <div>
-              <Input
-                type='text'
-                name='name'
-                placeholder='Full Name'
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Input
-                type='email'
-                name='email'
-                placeholder='Email'
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                className={error?.includes("email") ? "border-red-500" : ""}
-              />
-            </div>
-            <div>
-              <Input
-                type='password'
-                name='password'
-                placeholder='Password'
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                disabled={loading}
-                minLength={8}
-                className={
-                  formError?.includes("Password") ? "border-red-500" : ""
-                }
-              />
-            </div>
-            <div>
-              <Select
-                value={formData.role}
-                onValueChange={handleRoleChange}
-                disabled={loading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder='Select Role' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='requester'>Requester</SelectItem>
-                  <SelectItem value='artist'>Artist</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Input
+              type='text'
+              name='username'
+              placeholder='Username'
+              value={formData.username}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+            />
+            <Input
+              type='text'
+              name='name'
+              placeholder='Full Name'
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+            />
+            <Input
+              type='email'
+              name='email'
+              placeholder='Email'
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+            />
+            <Input
+              type='password'
+              name='password'
+              placeholder='Password'
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+              minLength={8}
+            />
+            <Select
+              value={formData.role}
+              onValueChange={handleRoleChange}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Select Role' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='requester'>Requester</SelectItem>
+                <SelectItem value='artist'>Artist</SelectItem>
+              </SelectContent>
+            </Select>
 
-            {displayError && (
+            {formError && (
               <Alert variant='destructive'>
-                <AlertDescription>{displayError}</AlertDescription>
+                <AlertDescription>{formError}</AlertDescription>
               </Alert>
             )}
 
             <Button
               type='submit'
               disabled={loading}
-              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200 disabled:bg-blue-300'
+              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>

@@ -21,13 +21,9 @@ const PageHeader = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser())
-      navigate("/")
-    } catch (error) {
-      console.error("Logout failed:", error)
-    }
+  const handleLogout = () => {
+    dispatch(logoutUser())
+    navigate("/")
   }
 
   const handleLogin = () => {
@@ -37,7 +33,9 @@ const PageHeader = () => {
   }
 
   const handleProfile = () => {
-    navigate(`/profile/${user._id}`)
+    if (user?._id) {
+      navigate(`/profile/${user._id}`)
+    }
   }
 
   const handleDashboard = () => {

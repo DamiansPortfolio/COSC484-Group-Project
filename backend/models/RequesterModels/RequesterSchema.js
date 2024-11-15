@@ -1,4 +1,13 @@
-// models/RequesterSchema.js
+/**
+ * Requester Schema
+ *
+ * Manages client/commissioner profiles including:
+ * - Company/organization details
+ * - Job posting history and statistics
+ * - Artist review management
+ * - Payment preferences
+ * - Account verification status
+ */
 import mongoose from "mongoose"
 
 const reviewFromArtistSchema = new mongoose.Schema({
@@ -44,6 +53,7 @@ const requesterSchema = new mongoose.Schema({
     activeJobs: { type: Number, default: 0 },
     completedJobs: { type: Number, default: 0 },
     totalSpent: { type: Number, default: 0 },
+    totalApplications: { type: Number, default: 0 },
   },
   reviews: [reviewFromArtistSchema],
   averageRating: { type: Number, default: 0 },
@@ -62,7 +72,6 @@ const requesterSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
-// Create and export the model
 const Requester = mongoose.model(
   "Requester",
   requesterSchema,

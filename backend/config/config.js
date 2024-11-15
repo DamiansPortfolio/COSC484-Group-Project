@@ -1,18 +1,27 @@
-// config/config.js
 import dotenv from "dotenv"
 import { fileURLToPath } from "url"
-import { dirname } from "path"
-import path from "path"
+import { dirname, resolve } from "path"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Update path to look for .env.production in the backend root directory
-dotenv.config({ path: path.resolve(__dirname, "../.env.production") })
+dotenv.config({ path: resolve(__dirname, "../.env.production") })
 
 export const config = {
-  MONGODB_URI: process.env.MONGODB_URI,
-  DB_USERS: process.env.DB_USERS,
-  JWT_SECRET: process.env.JWT_SECRET,
-  FRONTEND_URL: process.env.FRONTEND_URL,
+  mongodb: {
+    uri: process.env.MONGODB_URI,
+    users: process.env.DB_USERS,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
+  app: {
+    frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+    port: process.env.PORT || 5001,
+    env: process.env.NODE_ENV || "development",
+  },
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  },
 }

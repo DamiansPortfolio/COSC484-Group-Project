@@ -1,7 +1,15 @@
-// models/JobSchema.js
+/**
+ * Job Schema
+ *
+ * Core schema for managing art commission jobs. Handles the complete lifecycle
+ * from posting to completion, including:
+ * - Job details and requirements
+ * - Application processing
+ * - Milestone tracking
+ * - Project timeline management
+ */
 import mongoose from "mongoose"
 
-// Schema for job requirements
 const requirementSchema = new mongoose.Schema({
   skillRequired: { type: String, required: true },
   experienceLevel: {
@@ -12,7 +20,6 @@ const requirementSchema = new mongoose.Schema({
   description: { type: String },
 })
 
-// Schema for job milestones
 const milestoneSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
@@ -32,7 +39,6 @@ const milestoneSchema = new mongoose.Schema({
   ],
 })
 
-// Schema for job applications
 const applicationSchema = new mongoose.Schema({
   artistId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -56,7 +62,6 @@ const applicationSchema = new mongoose.Schema({
   ],
 })
 
-// Main job schema
 const jobSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -90,7 +95,7 @@ const jobSchema = new mongoose.Schema({
   timeline: {
     startDate: { type: Date },
     deadline: { type: Date },
-    duration: { type: Number }, // in days
+    duration: { type: Number },
   },
   requirements: [requirementSchema],
   milestones: [milestoneSchema],
@@ -114,6 +119,5 @@ const jobSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
-// Create and export the model
 const Job = mongoose.model("Job", jobSchema, "jobs")
 export default Job

@@ -1,23 +1,25 @@
+// actions/recommendationActions.js
+/**
+ * Recommendation system actions
+ * Handles artist recommendations, filtering, and sorting
+ */
 import { api } from "./userActions"
 
-export const fetchRecommendations = () => {
-  return async (dispatch) => {
-    dispatch({ type: "FETCH_RECOMMENDATIONS_REQUEST" })
+export const fetchRecommendations = () => async (dispatch) => {
+  dispatch({ type: "FETCH_RECOMMENDATIONS_REQUEST" })
 
-    try {
-      const { data } = await api.get("/artists")
-
-      dispatch({
-        type: "FETCH_RECOMMENDATIONS_SUCCESS",
-        payload: data,
-      })
-    } catch (error) {
-      console.error("Fetch error:", error)
-      dispatch({
-        type: "FETCH_RECOMMENDATIONS_FAIL",
-        payload: error.response?.data?.message || error.message,
-      })
-    }
+  try {
+    const { data } = await api.get("/api/artists")
+    dispatch({
+      type: "FETCH_RECOMMENDATIONS_SUCCESS",
+      payload: data,
+    })
+  } catch (error) {
+    console.error("Error fetching artists:", error)
+    dispatch({
+      type: "FETCH_RECOMMENDATIONS_FAIL",
+      payload: error.response?.data?.message || "Failed to fetch artists",
+    })
   }
 }
 

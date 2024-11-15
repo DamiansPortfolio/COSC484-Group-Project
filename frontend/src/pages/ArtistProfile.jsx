@@ -35,7 +35,7 @@ const ArtistProfile = () => {
     const fetchArtistData = async () => {
       try {
         const artistResponse = await fetch(
-          `${import.meta.env.VITE_API_URL}/artists/${id}`
+          `${import.meta.env.VITE_API_URL}api/artists/${id}`
         )
         if (!artistResponse.ok) {
           throw new Error("Artist not found")

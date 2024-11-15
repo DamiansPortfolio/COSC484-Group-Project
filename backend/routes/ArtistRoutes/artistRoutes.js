@@ -1,32 +1,18 @@
 import express from "express"
 import { protect, authorize } from "../../middleware/authMiddleware.js"
-import {
-  getAllArtists,
-  getArtistProfile,
-  updateArtistProfile,
-  addPortfolioItem,
-  updatePortfolioItem,
-  deletePortfolioItem,
-  getArtistStatistics,
-  getArtistActivities, // Add this
-} from "../../controllers/Artists/artistController.js"
+import artistController from "../../controllers/Artists/artistController.js"
 
 const router = express.Router()
 
-// Public routes
-router.get("/", getAllArtists) // Keep public for discovery
+router.get("/", artistController.getAllArtists)
+router.get("/:userId", artistController.getArtistProfile)
+router.get("/:userId/statistics", artistController.getArtistStatistics)
+router.get("/:userId/activities", artistController.getArtistActivities)
 
-// Protected routes
 router.use(protect)
 router.use(authorize("artist"))
 
-// Artist-specific routes
-router.get("/:userId", getArtistProfile)
-router.get("/:userId/statistics", getArtistStatistics)
-router.get("/:userId/activities", getArtistActivities)
-router.put("/:userId", updateArtistProfile)
-router.post("/:userId/portfolio", addPortfolioItem)
-router.put("/:userId/portfolio/:itemId", updatePortfolioItem)
-router.delete("/:userId/portfolio/:itemId", deletePortfolioItem)
+router.put("/:userId", artistController.updateArtistProfile)
+router.post("/:userId/portfolio", artistController.addPortfolioItem)
 
 export default router

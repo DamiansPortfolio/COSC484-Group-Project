@@ -1,4 +1,3 @@
-// reducers/userReducer.js
 import {
   USER_REGISTER_REQUEST,
   USER_REGISTER_SUCCESS,
@@ -7,7 +6,6 @@ import {
   USER_LOGIN_SUCCESS,
   USER_LOGIN_FAIL,
   USER_LOGOUT,
-  USER_REFRESH_TOKEN_SUCCESS,
 } from "../constants/userConstants"
 
 const initialState = {
@@ -21,11 +19,7 @@ const userReducer = (state = initialState, action) => {
   switch (action.type) {
     case USER_REGISTER_REQUEST:
     case USER_LOGIN_REQUEST:
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      }
+      return { ...state, loading: true, error: null }
 
     case USER_REGISTER_SUCCESS:
     case USER_LOGIN_SUCCESS:
@@ -33,14 +27,6 @@ const userReducer = (state = initialState, action) => {
         ...state,
         user: action.payload.user,
         loading: false,
-        isAuthenticated: true,
-        error: null,
-      }
-
-    case USER_REFRESH_TOKEN_SUCCESS:
-      return {
-        ...state,
-        user: action.payload.user,
         isAuthenticated: true,
         error: null,
       }
@@ -55,9 +41,7 @@ const userReducer = (state = initialState, action) => {
       }
 
     case USER_LOGOUT:
-      return {
-        ...initialState,
-      }
+      return initialState
 
     default:
       return state

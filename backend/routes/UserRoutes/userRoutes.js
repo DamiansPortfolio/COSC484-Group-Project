@@ -1,22 +1,14 @@
+// routes/UserRoutes/userRoutes.js
 import express from "express"
-import {
-  updateUser,
-  createUser,
-  loginUser,
-  logoutUser,
-  refreshToken,
-} from "../../controllers/Users/userController.js"
-import { protect, verifyRefreshToken } from "../../middleware/authMiddleware.js"
+import userController from "../../controllers/Users/userController.js"
+import { protect } from "../../middleware/authMiddleware.js"
 
 const router = express.Router()
 
-// Public routes
-router.post("/login", loginUser)
-router.post("/register", createUser)
-router.post("/refresh-token", verifyRefreshToken, refreshToken)
-
-// Protected routes
-router.post("/logout", protect, logoutUser)
-router.put("/:id", protect, updateUser)
+router.post("/login", userController.loginUser)
+router.post("/register", userController.createUser)
+router.get("/check-auth", userController.checkAuth)
+router.post("/logout", userController.logoutUser)
+router.put("/:id", protect, userController.updateUser)
 
 export default router

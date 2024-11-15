@@ -1,3 +1,4 @@
+// Login.jsx
 import React, { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { loginUser } from "../redux/actions/userActions"
@@ -13,39 +14,47 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+/**
+ * Login Component
+ *
+ * A form component that handles user authentication through username/password login.
+ * Features:
+ * - Form validation for required fields
+ * - Error handling and display
+ * - Loading state management
+ * - Automatic redirection after successful login
+ * - Navigation to registration
+ */
 const Login = () => {
+  // Component implementation
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [formError, setFormError] = useState("")
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
-  // Update selector to use new auth state
   const { loading, error, isAuthenticated } = useSelector((state) => state.user)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard")
+    }
+  }, [isAuthenticated, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setFormError("") // Clear any previous form errors
+    setFormError("")
 
     if (!username.trim() || !password.trim()) {
       setFormError("Please enter both username and password")
       return
     }
 
-    try {
-      await dispatch(loginUser({ username, password }))
-    } catch (err) {
-      setFormError("Login failed. Please try again.")
+    const result = await dispatch(loginUser({ username, password }))
+    if (!result.success) {
+      setFormError(result.error)
     }
   }
-
-  // Update effect to use isAuthenticated instead of user object
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard")
-    }
-  }, [isAuthenticated, navigate])
 
   return (
     <div className='flex justify-center py-8'>

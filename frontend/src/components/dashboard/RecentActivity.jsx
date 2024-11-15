@@ -16,8 +16,8 @@ const RecentActivity = () => {
       try {
         const endpoint =
           user?.role === "artist"
-            ? `/artists/${user._id}/activities`
-            : `/requesters/${user._id}/activities`
+            ? `/api/artists/${user._id}/activities`
+            : `api/requesters/${user._id}/activities`
 
         const { data } = await api.get(endpoint)
         setActivities(data)

@@ -1,21 +1,14 @@
-// components/PageLayout.js
-import React, { useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
+import React, { useState } from "react" // Add this import
+import { useLocation } from "react-router-dom"
+import { useSelector } from "react-redux"
 import PageHeader from "./PageHeader"
 import Sidebar from "./Sidebar"
-import { refreshToken } from "../redux/actions/userActions"
 
 const PageLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-
-  // Get auth state from Redux
   const { isAuthenticated, user } = useSelector((state) => state.user)
 
-  // Routes configuration
   const publicRoutes = ["/login", "/register", "/"]
   const protectedRoutes = [
     "/dashboard",
@@ -27,64 +20,42 @@ const PageLayout = ({ children }) => {
   ]
   const noHeaderRoutes = ["/"]
 
-  // Check if current route is protected
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    location.pathname.startsWith(route)
-  )
-
-  // Check if current route is public
-  const isPublicRoute = publicRoutes.includes(location.pathname)
-
-  // Auth check effect
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (isProtectedRoute && !isAuthenticated) {
-        // Try to refresh token first
-        const refreshed = await dispatch(refreshToken())
-        if (!refreshed) {
-          navigate("/login", {
-            replace: true,
-            state: { from: location.pathname },
-          })
-        }
-      }
-    }
-
-    checkAuth()
-  }, [isProtectedRoute, isAuthenticated, location, navigate, dispatch])
-
-  // Sidebar visibility logic
   const showSidebar =
     isAuthenticated &&
     !publicRoutes.includes(location.pathname) &&
     protectedRoutes.some((route) => location.pathname.startsWith(route))
 
-  // Header visibility logic
   const showHeader = !noHeaderRoutes.includes(location.pathname)
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
 
   return (
     <div className='min-h-screen flex flex-col'>
-      {showHeader && <PageHeader />}
-      <div className='flex flex-1 w-full'>
+      {showHeader && (
+        <header className='fixed top-0 left-0 right-0 z-50'>
+          <PageHeader />
+        </header>
+      )}
+
+      <div className='flex flex-1 pt-16'>
         {showSidebar && (
-          <Sidebar
-            sidebarOpen={sidebarOpen}
-            toggleSidebar={toggleSidebar}
-            user={user}
-          />
+          <div className='fixed left-0 top-16 h-[calc(100vh-64px)]'>
+            <Sidebar
+              sidebarOpen={sidebarOpen}
+              toggleSidebar={toggleSidebar}
+              user={user}
+            />
+          </div>
         )}
         <main
           className={`
-            flex-1 
-            ${location.pathname === "/" ? "p-0" : "p-6"}
-            w-full
-            bg-gray-50
-            transition-all 
-            duration-300 
-            ${showSidebar && sidebarOpen ? "ml-64" : "ml-0"}
-          `}
+          flex-1
+          transition-all 
+          duration-300 
+          ease-in-out
+          ${location.pathname === "/" ? "p-0" : "p-6"}
+          ${showSidebar ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-0"}
+        `}
         >
           {children}
         </main>

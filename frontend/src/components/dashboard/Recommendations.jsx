@@ -74,24 +74,28 @@ const LoadingSkeleton = () => (
 const Recommendations = () => {
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.user)
-  const { artists, loading, selectedSkill, sortOption } = useSelector(
-    (state) => state.recommendations
-  )
+  const {
+    artists = [],
+    loading,
+    selectedSkill,
+    sortOption,
+  } = useSelector((state) => state.recommendations)
 
   useEffect(() => {
-    // Using existing fetchRecommendations action that fetches artists
     dispatch(fetchRecommendations())
   }, [dispatch])
 
-  // Get unique primary skills from all artists
+  // Add default empty array and null checks
   const getAllPrimarySkills = () => {
+    if (!artists || artists.length === 0) return []
+
     return [
       ...new Set(
         artists.flatMap(
-          (artist) => artist.skills?.primary?.map((skill) => skill.name) || []
+          (artist) => artist?.skills?.primary?.map((skill) => skill?.name) || []
         )
       ),
-    ]
+    ].filter(Boolean) // Remove any undefined/null values
   }
 
   if (loading) {
@@ -102,6 +106,20 @@ const Recommendations = () => {
         </CardHeader>
         <CardContent>
           <LoadingSkeleton />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Add check for empty artists array
+  if (!artists || artists.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommended Artists</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className='text-center text-gray-500'>No artists found</p>
         </CardContent>
       </Card>
     )

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
-import { api } from "../../redux/actions/userActions" // Import our configured axios instance
+import { api } from "../../redux/actions/userActions"
 
 const QuickStats = () => {
   const [stats, setStats] = useState(null)
@@ -13,12 +13,14 @@ const QuickStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        let endpoint =
-          user?.role === "artist"
-            ? "/artists/statistics"
-            : "/requesters/statistics"
+        if (!user?._id) return
 
-        const { data } = await api.get(`${endpoint}/${user?._id}`)
+        let endpoint =
+          user.role === "artist"
+            ? `/api/artists/${user._id}/statistics`
+            : `/api/requesters/${user._id}/statistics`
+
+        const { data } = await api.get(endpoint)
         setStats(formatStats(data))
       } catch (err) {
         console.error("Error fetching stats:", err)
@@ -28,46 +30,50 @@ const QuickStats = () => {
       }
     }
 
-    if (user?._id) {
-      fetchStats()
-    }
+    fetchStats()
   }, [user])
 
   const formatStats = (data) => {
+    if (!data) return []
+
     if (user?.role === "artist") {
       return [
         {
           title: "Active Applications",
-          value: data?.activeApplications || 0,
+          value: data.activeApplications || 0,
           description: "Current open applications",
         },
         {
           title: "Completed Jobs",
-          value: data?.completedJobs || 0,
+          value: data.completedJobs || 0,
           description: "Successfully completed",
         },
         {
           title: "Average Rating",
-          value: data?.averageRating?.toFixed(1) || "N/A",
-          description: "From completed jobs",
+          value:
+            typeof data.averageRating === "number"
+              ? data.averageRating.toFixed(1)
+              : "N/A",
+          description: "Overall rating",
         },
       ]
     }
 
+    // Requester stats
     return [
       {
         title: "Active Jobs",
-        value: data?.activeJobs || 0,
+        value: data.activeJobs || 0,
         description: "Currently posted jobs",
       },
       {
         title: "Total Applications",
-        value: data?.totalApplications || 0,
-        description: "Across all jobs",
+        value: data.totalApplications || 0,
+        description: "Received applications",
       },
       {
-        title: "Completed Projects",
-        value: data?.completedJobs || 0,
+        title: "Completed Jobs",
+        value: data.completedJobs || 0,
         description: "Successfully finished",
       },
     ]

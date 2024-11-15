@@ -1,13 +1,16 @@
+/**
+ * Main application component
+ * Handles routing, authentication, and layout management
+ */
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Navigate,
 } from "react-router-dom"
-import { Provider } from "react-redux"
-import { PersistGate } from "redux-persist/integration/react"
-import { useSelector } from "react-redux"
-import store, { persistor } from "./redux/store"
+import { Provider, useSelector, useDispatch } from "react-redux"
+import { useEffect } from "react"
+import store from "./redux/store"
 import ArtistProfile from "./pages/ArtistProfile"
 import UserCreationPage from "./pages/UserCreationPage"
 import Dashboard from "./pages/Dashboard"
@@ -15,37 +18,51 @@ import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
 import WelcomePage from "./pages/WelcomePage"
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useSelector((state) => state.user)
-
-  if (!isAuthenticated) {
-    // Redirect them to login page if not authenticated
-    return <Navigate to='/login' replace />
-  }
-
-  return children
+  const { isAuthenticated } = useSelector((state) => state.user)
+  return isAuthenticated ? children : <Navigate to='/login' replace />
 }
 
-// Public Route Component (redirects to dashboard if already logged in)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.user)
+  return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
+}
 
-  if (isAuthenticated) {
-    // Redirect to dashboard if user is already logged in
-    return <Navigate to='/dashboard' replace />
-  }
+const AuthWrapper = ({ children }) => {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/users/check-auth`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+          }
+        )
+
+        if (response.ok) {
+          const { user } = await response.json()
+          dispatch({ type: "USER_LOGIN_SUCCESS", payload: { user } })
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error)
+      }
+    }
+    checkAuth()
+  }, [dispatch])
 
   return children
 }
 
-function App() {
+const App = () => {
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
+      <AuthWrapper>
         <Router>
           <Routes>
-            {/* Public Routes */}
             <Route
               path='/'
               element={
@@ -74,8 +91,6 @@ function App() {
                 </PublicRoute>
               }
             />
-
-            {/* Protected Routes */}
             <Route
               path='/dashboard'
               element={
@@ -96,12 +111,10 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
-            {/* Catch all route */}
             <Route path='*' element={<Navigate to='/' />} />
           </Routes>
         </Router>
-      </PersistGate>
+      </AuthWrapper>
     </Provider>
   )
 }
