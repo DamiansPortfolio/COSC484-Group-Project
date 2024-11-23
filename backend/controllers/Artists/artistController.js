@@ -24,6 +24,8 @@ const artistController = {
           "skills.primary averageRating portfolioItems.imageUrl portfolioItems.title"
         )
 
+      console.log("Artists fetched:", artists) // Add logging here
+
       const publicArtists = artists.map((artist) => ({
         _id: artist._id,
         userId: artist.userId,

@@ -1,7 +1,11 @@
 import React from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
-import { useSelector, useDispatch } from "react-redux"
-import { logoutUser } from "../redux/actions/userActions"
+import { useDispatch } from "react-redux"
+import {
+  logoutUser,
+  isAuthenticated,
+  getUserData,
+} from "../redux/actions/userActions"
 import { LogOut, User, LogIn } from "lucide-react"
 import { Button } from "./ui/button"
 import {
@@ -14,9 +18,7 @@ import {
 import logo from "../assets/commission.svg"
 
 const PageHeader = () => {
-  const { user, loading, error, isAuthenticated } = useSelector(
-    (state) => state.user
-  )
+  const user = getUserData()
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
@@ -43,19 +45,7 @@ const PageHeader = () => {
   }
 
   const renderUserActions = () => {
-    if (loading) {
-      return <div className='animate-pulse bg-gray-200 h-8 w-24 rounded' />
-    }
-
-    if (error) {
-      return (
-        <span className='text-red-600 px-3 py-1 rounded-md bg-red-50'>
-          {error}
-        </span>
-      )
-    }
-
-    if (isAuthenticated && user) {
+    if (isAuthenticated() && user) {
       return (
         <div className='flex items-center gap-4'>
           <DropdownMenu>

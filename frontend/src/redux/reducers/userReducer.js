@@ -6,6 +6,9 @@ import {
   USER_LOGIN_SUCCESS,
   USER_LOGIN_FAIL,
   USER_LOGOUT,
+  CHECK_AUTH_REQUEST,
+  CHECK_AUTH_SUCCESS,
+  CHECK_AUTH_FAIL,
 } from "../constants/userConstants"
 
 const initialState = {
@@ -25,7 +28,6 @@ const userReducer = (state = initialState, action) => {
     case USER_LOGIN_SUCCESS:
       return {
         ...state,
-        user: action.payload.user,
         loading: false,
         isAuthenticated: true,
         error: null,
@@ -42,6 +44,27 @@ const userReducer = (state = initialState, action) => {
 
     case USER_LOGOUT:
       return initialState
+
+    case CHECK_AUTH_REQUEST:
+      return { ...state, loading: true }
+
+    case CHECK_AUTH_SUCCESS:
+      return {
+        ...state,
+        user: action.payload.user,
+        loading: false,
+        isAuthenticated: true,
+        error: null,
+      }
+
+    case CHECK_AUTH_FAIL:
+      return {
+        ...state,
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+        error: null,
+      }
 
     default:
       return state

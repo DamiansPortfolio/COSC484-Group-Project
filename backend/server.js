@@ -1,48 +1,52 @@
-// server.js
-import { configureServer } from "./config/server.js"
-import { connectToDatabase } from "./config/db.js"
-import { config } from "./config/config.js"
-import serverless from "@vendia/serverless-express"
-import { configureRoutes } from "./config/routes.js"
-import { errorHandler } from "./middleware/errorHandler.js"
+import express from "express"
+import dotenv from "dotenv"
+import userRoutes from "./routes/UserRoutes/userRoutes.js"
+import artistRoutes from "./routes/ArtistRoutes/artistRoutes.js"
+import requesterRoutes from "./routes/RequesterRoutes/requesterRoutes.js"
+import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
 
-let isConnected = false
-const app = configureServer()
+dotenv.config()
 
-// Database connection handler
-const connectDb = async () => {
-  if (!isConnected) {
-    await connectToDatabase()
-    isConnected = true
+const app = express()
+
+// Middleware
+app.use(express.json())
+
+// Token extraction middleware (optional, but can be helpful)
+app.use((req, res, next) => {
+  const authHeader = req.headers["authorization"]
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    req.token = authHeader.substring(7)
   }
-}
+  next()
+})
 
-// Configure routes before error handler
-configureRoutes(app)
+// Register API routes
+app.use("/api/users", userRoutes)
+app.use("/api/artists", artistRoutes)
+app.use("/api/requesters", requesterRoutes)
+app.use("/api/jobs", jobRoutes)
 
-// Global error handler - must be last middleware
-app.use(errorHandler)
+// Wildcard route to handle all other endpoints
+app.all("*", (req, res) => {
+  res.status(404).json({
+    message: `The endpoint ${req.originalUrl} does not exist.`,
+    method: req.method,
+    availableEndpoints: [
+      "/api/users",
+      "/api/artists",
+      "/api/requesters",
+      "/api/jobs",
+    ],
+  })
+})
 
-// Lambda handler for production
-export const handler = async (event, context) => {
-  await connectDb()
-  const serverlessHandler = serverless({ app })
-  return serverlessHandler(event, context)
-}
+// Basic error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).json({
+    message: err.message,
+  })
+})
 
-// Development server
-if (config.app.env !== "production") {
-  connectDb()
-    .then(() => {
-      app.listen(config.app.port, () => {
-        console.log(
-          `Server running in ${config.app.env} mode on port ${config.app.port}`
-        )
-        console.log(`Frontend URL: ${config.app.frontendUrl}`)
-      })
-    })
-    .catch((error) => {
-      console.error("Failed to start server:", error)
-      process.exit(1)
-    })
-}
+export default app

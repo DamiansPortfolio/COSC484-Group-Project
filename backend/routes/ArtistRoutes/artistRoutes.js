@@ -1,18 +1,27 @@
 import express from "express"
-import { protect, authorize } from "../../middleware/authMiddleware.js"
 import artistController from "../../controllers/Artists/artistController.js"
+import { verifyToken } from "../../middleware/authMiddleware.js"
 
 const router = express.Router()
 
+// routes/ArtistRoutes/artistRoutes.js
 router.get("/", artistController.getAllArtists)
-router.get("/:userId", artistController.getArtistProfile)
-router.get("/:userId/statistics", artistController.getArtistStatistics)
-router.get("/:userId/activities", artistController.getArtistActivities)
-
-router.use(protect)
-router.use(authorize("artist"))
-
-router.put("/:userId", artistController.updateArtistProfile)
-router.post("/:userId/portfolio", artistController.addPortfolioItem)
+router.get("/:userId", verifyToken, artistController.getArtistProfile)
+router.get(
+  "/:userId/statistics",
+  verifyToken,
+  artistController.getArtistStatistics
+)
+router.get(
+  "/:userId/activities",
+  verifyToken,
+  artistController.getArtistActivities
+)
+router.post(
+  "/:userId/portfolio",
+  verifyToken,
+  artistController.addPortfolioItem
+)
+router.put("/:userId", verifyToken, artistController.updateArtistProfile)
 
 export default router

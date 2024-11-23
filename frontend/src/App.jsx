@@ -1,7 +1,3 @@
-/**
- * Main application component
- * Handles routing, authentication, and layout management
- */
 import {
   BrowserRouter as Router,
   Route,
@@ -9,8 +5,9 @@ import {
   Navigate,
 } from "react-router-dom"
 import { Provider, useSelector, useDispatch } from "react-redux"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import store from "./redux/store"
+import { checkAuthStatus } from "./redux/actions/userActions"
 import ArtistProfile from "./pages/ArtistProfile"
 import UserCreationPage from "./pages/UserCreationPage"
 import Dashboard from "./pages/Dashboard"
@@ -19,40 +16,41 @@ import PageLayout from "./components/PageLayout"
 import WelcomePage from "./pages/WelcomePage"
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return isAuthenticated ? children : <Navigate to='/login' replace />
 }
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
 }
 
 const AuthWrapper = ({ children }) => {
   const dispatch = useDispatch()
+  const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/users/check-auth`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-          }
-        )
-
-        if (response.ok) {
-          const { user } = await response.json()
-          dispatch({ type: "USER_LOGIN_SUCCESS", payload: { user } })
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-      }
+    const initAuth = async () => {
+      await dispatch(checkAuthStatus()) // Always dispatch checkAuthStatus
+      setIsChecking(false)
     }
-    checkAuth()
+
+    initAuth()
   }, [dispatch])
+
+  if (isChecking) {
+    return <div>Loading...</div>
+  }
 
   return children
 }
@@ -63,8 +61,9 @@ const App = () => {
       <AuthWrapper>
         <Router>
           <Routes>
+            <Route path='/' element={<ProtectedOrPublic />} />
             <Route
-              path='/'
+              path='/welcome'
               element={
                 <PageLayout>
                   <WelcomePage />
@@ -111,12 +110,17 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path='*' element={<Navigate to='/' />} />
+            <Route path='*' element={<Navigate to='/' replace />} />
           </Routes>
         </Router>
       </AuthWrapper>
     </Provider>
   )
+}
+
+const ProtectedOrPublic = () => {
+  const { isAuthenticated } = useSelector((state) => state.user)
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/welcome"} replace />
 }
 
 export default App

@@ -1,41 +1,39 @@
-import React, { useState, useEffect } from "react"
-import { useSelector } from "react-redux"
+import React, { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
-import { api } from "../../redux/actions/userActions"
+import { api, getUserData } from "../../redux/actions/userActions"
 
 const QuickStats = () => {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const { user } = useSelector((state) => state.user)
+  const user = getUserData()
+
+  const fetchStats = useCallback(async () => {
+    console.log("Fetching stats for user:", user?._id)
+    if (!user?._id) return
+    try {
+      const endpoint =
+        user.role === "artist"
+          ? `/api/artists/${user._id}/statistics`
+          : `/api/requesters/${user._id}/statistics`
+      const { data } = await api.get(endpoint)
+      setStats(formatStats(data))
+    } catch (err) {
+      console.error("Error fetching stats:", err)
+      setError("Failed to load statistics")
+    } finally {
+      setLoading(false)
+    }
+  }, [user._id, user.role])
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        if (!user?._id) return
-
-        let endpoint =
-          user.role === "artist"
-            ? `/api/artists/${user._id}/statistics`
-            : `/api/requesters/${user._id}/statistics`
-
-        const { data } = await api.get(endpoint)
-        setStats(formatStats(data))
-      } catch (err) {
-        console.error("Error fetching stats:", err)
-        setError("Failed to load statistics")
-      } finally {
-        setLoading(false)
-      }
-    }
-
+    console.log("useEffect triggered for QuickStats")
     fetchStats()
-  }, [user])
+  }, [fetchStats])
 
   const formatStats = (data) => {
     if (!data) return []
-
     if (user?.role === "artist") {
       return [
         {
@@ -58,8 +56,6 @@ const QuickStats = () => {
         },
       ]
     }
-
-    // Requester stats
     return [
       {
         title: "Active Jobs",
@@ -119,4 +115,4 @@ const QuickStats = () => {
   )
 }
 
-export default QuickStats
+export default React.memo(QuickStats)

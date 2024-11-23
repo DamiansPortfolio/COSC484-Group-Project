@@ -21,6 +21,7 @@ import {
 import { Link } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { getUserData } from "../../redux/actions/userActions"
 
 const ArtistCard = ({ artist }) => (
   <Card key={artist._id} className='hover:shadow-lg transition-shadow'>
@@ -73,7 +74,7 @@ const LoadingSkeleton = () => (
 
 const Recommendations = () => {
   const dispatch = useDispatch()
-  const { user } = useSelector((state) => state.user)
+  const user = getUserData()
   const {
     artists = [],
     loading,

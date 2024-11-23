@@ -1,4 +1,3 @@
-// reducers/recommendationsReducer.js
 const initialState = {
   artists: [],
   loading: false,

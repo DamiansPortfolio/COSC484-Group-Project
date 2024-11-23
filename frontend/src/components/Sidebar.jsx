@@ -11,11 +11,11 @@ import {
   X,
 } from "lucide-react"
 import { useLocation, Link } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { getUserData } from "../redux/actions/userActions"
 
 const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
   const location = useLocation()
-  const { user } = useSelector((state) => state.user)
+  const user = getUserData()
 
   const menuItems = useMemo(() => {
     const commonItems = [

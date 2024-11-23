@@ -1,13 +1,3 @@
-/**
- * User Schema
- *
- * Core authentication and user management schema handling:
- * - User authentication and security
- * - Role-based access control
- * - Account verification
- * - Password reset/recovery
- * - Rate limiting for failed login attempts
- */
 import mongoose from "mongoose"
 import bcrypt from "bcryptjs"
 
@@ -73,36 +63,78 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
+// Optimize password hashing with a more efficient approach
 userSchema.virtual("password").set(function (password) {
   if (password) {
-    const salt = bcrypt.genSaltSync(10)
-    this.passwordHash = bcrypt.hashSync(password, salt)
+    try {
+      const salt = bcrypt.genSaltSync(10)
+      this.passwordHash = bcrypt.hashSync(password, salt)
+    } catch (error) {
+      console.error("Password hashing error:", error)
+      throw new Error("Error setting password")
+    }
   }
 })
 
+// Optimized password comparison with timeout and better error handling
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  if (this.accountLockUntil && this.accountLockUntil > Date.now()) {
-    throw new Error("Account is temporarily locked. Please try again later.")
-  }
-
-  const isMatch = await bcrypt.compare(candidatePassword, this.passwordHash)
-
-  if (!isMatch) {
-    this.failedLoginAttempts += 1
-    if (this.failedLoginAttempts >= 5) {
-      this.accountLockUntil = new Date(Date.now() + 15 * 60 * 1000)
+  try {
+    // Check for account lock first
+    if (this.accountLockUntil && this.accountLockUntil > Date.now()) {
+      const waitTime = Math.ceil(
+        (this.accountLockUntil - Date.now()) / 1000 / 60
+      )
+      throw new Error(
+        `Account is locked. Please try again in ${waitTime} minutes.`
+      )
     }
-    await this.save()
-    throw new Error("Invalid password")
-  }
 
-  if (this.failedLoginAttempts > 0) {
-    this.failedLoginAttempts = 0
-    this.accountLockUntil = undefined
-    await this.save()
-  }
+    // Add timeout to bcrypt compare
+    const isMatch = await Promise.race([
+      bcrypt.compare(candidatePassword, this.passwordHash),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Password comparison timeout")), 4000)
+      ),
+    ])
 
-  return true
+    if (!isMatch) {
+      // Increment failed attempts but don't wait for save
+      this.failedLoginAttempts += 1
+      if (this.failedLoginAttempts >= 5) {
+        this.accountLockUntil = new Date(Date.now() + 15 * 60 * 1000)
+      }
+      this.save().catch((err) =>
+        console.error("Error saving failed attempts:", err)
+      )
+      throw new Error("Invalid credentials")
+    }
+
+    // Reset failed attempts in background
+    if (this.failedLoginAttempts > 0) {
+      this.failedLoginAttempts = 0
+      this.accountLockUntil = undefined
+      this.save().catch((err) =>
+        console.error("Error resetting failed attempts:", err)
+      )
+    }
+
+    // Update last login time in background
+    this.lastLogin = new Date()
+    this.save().catch((err) => console.error("Error updating last login:", err))
+
+    return true
+  } catch (error) {
+    // Log the error but don't expose internal details
+    console.error("Password comparison error:", error)
+    if (error.message.includes("timeout")) {
+      throw new Error("Login request timed out. Please try again.")
+    }
+    throw new Error(
+      error.message.includes("Account is locked")
+        ? error.message
+        : "Invalid credentials"
+    )
+  }
 }
 
 userSchema.methods.createPasswordResetToken = function () {
@@ -115,6 +147,8 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken
 }
 
+// Optimize indexes
+userSchema.index({ username: 1, email: 1 })
 userSchema.index({ emailVerificationToken: 1 }, { sparse: true })
 userSchema.index({ passwordResetToken: 1 }, { sparse: true })
 

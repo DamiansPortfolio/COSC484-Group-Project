@@ -1,19 +1,24 @@
 // routes/RequesterRoutes/requesterRoutes.js
 import express from "express"
-import { protect, authorize } from "../../middleware/authMiddleware.js"
 import requesterController from "../../controllers/Requesters/requesterController.js"
+import { verifyToken } from "../../middleware/authMiddleware.js"
 
 const router = express.Router()
 
-router.use(protect)
-router.use(authorize("requester"))
-
 router.get("/", requesterController.getAllRequesters)
-router.get("/:userId", requesterController.getRequesterProfile)
-router.get("/:userId/statistics", requesterController.getRequesterStatistics)
-router.get("/:userId/activities", requesterController.getRequesterActivities)
-router.get("/:userId/jobs", requesterController.getRequesterJobs)
-router.put("/:userId", requesterController.updateRequesterProfile)
-router.post("/:userId/reviews", requesterController.addReview)
+router.get("/:userId", verifyToken, requesterController.getRequesterProfile)
+router.get(
+  "/:userId/statistics",
+  verifyToken,
+  requesterController.getRequesterStatistics
+)
+router.get(
+  "/:userId/activities",
+  verifyToken,
+  requesterController.getRequesterActivities
+)
+router.get("/:userId/jobs", verifyToken, requesterController.getRequesterJobs)
+router.put("/:userId", verifyToken, requesterController.updateRequesterProfile)
+router.post("/:userId/reviews", verifyToken, requesterController.addReview)
 
 export default router

@@ -1,15 +1,17 @@
-import React, { useState } from "react" // Add this import
+import React, { useState } from "react"
 import { useLocation } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { isAuthenticated, getUserData } from "../redux/actions/userActions"
 import PageHeader from "./PageHeader"
 import Sidebar from "./Sidebar"
 
 const PageLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
-  const { isAuthenticated, user } = useSelector((state) => state.user)
+  const authenticated = isAuthenticated()
+  const user = getUserData()
 
-  const publicRoutes = ["/login", "/register", "/"]
+  const publicRoutes = ["/login", "/register"]
+  const welcomeRoute = "/welcome"
   const protectedRoutes = [
     "/dashboard",
     "/profile",
@@ -18,16 +20,22 @@ const PageLayout = ({ children }) => {
     "/messages",
     "/reviews",
   ]
-  const noHeaderRoutes = ["/"]
 
   const showSidebar =
-    isAuthenticated &&
+    authenticated &&
     !publicRoutes.includes(location.pathname) &&
+    location.pathname !== welcomeRoute &&
     protectedRoutes.some((route) => location.pathname.startsWith(route))
 
-  const showHeader = !noHeaderRoutes.includes(location.pathname)
+  const showHeader =
+    !publicRoutes.includes(location.pathname) &&
+    location.pathname !== welcomeRoute
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+
+  if (location.pathname === welcomeRoute) {
+    return <div>{children}</div>
+  }
 
   return (
     <div className='min-h-screen flex flex-col'>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
+import { getUserData } from "../../redux/actions/userActions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, AlertCircle } from "lucide-react"
 import { api } from "../../redux/actions/userActions"
@@ -9,16 +9,19 @@ const RecentActivity = () => {
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const { user } = useSelector((state) => state.user)
+  const user = getUserData()
 
   useEffect(() => {
+    console.log("useEffect triggered for RecentActivity")
     const fetchActivities = async () => {
+      if (!user?._id) return
       try {
         const endpoint =
           user?.role === "artist"
             ? `/api/artists/${user._id}/activities`
             : `api/requesters/${user._id}/activities`
 
+        console.log("Fetching activities for user:", user?._id)
         const { data } = await api.get(endpoint)
         setActivities(data)
       } catch (err) {
@@ -29,10 +32,8 @@ const RecentActivity = () => {
       }
     }
 
-    if (user?._id) {
-      fetchActivities()
-    }
-  }, [user])
+    fetchActivities()
+  }, [user._id, user.role])
 
   // Simplified activity icons based on our existing models
   const getActivityIcon = (type) => {

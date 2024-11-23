@@ -1,7 +1,6 @@
-// Login.jsx
 import React, { useState, useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { loginUser } from "../redux/actions/userActions"
+import { useDispatch } from "react-redux"
+import { loginUser, isAuthenticated } from "../redux/actions/userActions"
 import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,45 +13,48 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-/**
- * Login Component
- *
- * A form component that handles user authentication through username/password login.
- * Features:
- * - Form validation for required fields
- * - Error handling and display
- * - Loading state management
- * - Automatic redirection after successful login
- * - Navigation to registration
- */
 const Login = () => {
-  // Component implementation
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [formError, setFormError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading, error, isAuthenticated } = useSelector((state) => state.user)
 
+  // Navigation effect
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated()) {
       navigate("/dashboard")
     }
-  }, [isAuthenticated, navigate])
+  }, [navigate])
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      setFormError("")
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setFormError("")
-
     if (!username.trim() || !password.trim()) {
       setFormError("Please enter both username and password")
       return
     }
-
-    const result = await dispatch(loginUser({ username, password }))
-    if (!result.success) {
-      setFormError(result.error)
+    setLoading(true)
+    try {
+      const result = await dispatch(loginUser({ username, password }))
+      if (!result.success) {
+        setFormError(result.error)
+      } else if (isAuthenticated()) {
+        navigate("/dashboard")
+      }
+    } catch (error) {
+      setFormError("An error occurred during login. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -88,9 +90,9 @@ const Login = () => {
                 className='w-full'
               />
             </div>
-            {(error || formError) && (
+            {formError && (
               <Alert variant='destructive'>
-                <AlertDescription>{error || formError}</AlertDescription>
+                <AlertDescription>{formError}</AlertDescription>
               </Alert>
             )}
             <Button
