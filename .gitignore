@@ -68,3 +68,4 @@ debug/
 local.*
 
 *.yaml
+backend/template.yaml
