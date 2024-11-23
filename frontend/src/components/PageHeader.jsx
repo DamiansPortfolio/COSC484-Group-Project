@@ -1,61 +1,136 @@
 import React from "react"
-import { useSelector, useDispatch } from "react-redux"
-import { logoutUser } from "../redux/actions/userActions" // For logout action
+import { Link, useNavigate, useLocation } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import {
+  logoutUser,
+  isAuthenticated,
+  getUserData,
+} from "../redux/actions/userActions"
+import { LogOut, User, LogIn } from "lucide-react"
+import { Button } from "./ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 import logo from "../assets/commission.svg"
-import { Link } from "react-router-dom" // Assuming you're using React Router for navigation
 
 const PageHeader = () => {
-  const { user, loading, error } = useSelector((state) => state.user) // Get user information
-  const dispatch = useDispatch() // Get the dispatch function
+  const user = getUserData()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const handleLogout = () => {
-    dispatch(logoutUser()) // Dispatch the logout action
+    dispatch(logoutUser())
+    navigate("/")
+  }
+
+  const handleLogin = () => {
+    navigate("/login", {
+      state: { from: location.pathname },
+    })
+  }
+
+  const handleProfile = () => {
+    if (user?._id) {
+      navigate(`/profile/${user._id}`)
+    }
+  }
+
+  const handleDashboard = () => {
+    navigate("/dashboard")
+  }
+
+  const renderUserActions = () => {
+    if (isAuthenticated() && user) {
+      return (
+        <div className='flex items-center gap-4'>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' className='flex items-center gap-2'>
+                <div className='h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center'>
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.username}
+                      className='h-8 w-8 rounded-full object-cover'
+                      onError={(e) => {
+                        e.currentTarget.src = ""
+                        e.currentTarget.className = "hidden"
+                      }}
+                    />
+                  ) : (
+                    <User className='h-5 w-5 text-gray-600' />
+                  )}
+                </div>
+                <span className='font-medium text-gray-700 hidden sm:inline'>
+                  {user.username}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-56'>
+              <DropdownMenuItem onClick={handleDashboard}>
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfile}>
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className='text-red-600 focus:text-red-600 focus:bg-red-50'
+              >
+                <LogOut className='h-4 w-4 mr-2' />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    }
+
+    return (
+      <Button
+        onClick={handleLogin}
+        variant='ghost'
+        className='text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+      >
+        <LogIn className='h-5 w-5 mr-2' />
+        <span className='hidden sm:inline'>Login</span>
+      </Button>
+    )
   }
 
   return (
-    <header className='bg-gray-400 shadow-sm'>
-      <div className='max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center'>
-        {/* Logo */}
-        <div className='flex items-center'>
-          <img src={logo} alt='Logo' className='h-8 w-auto mr-3' />
-          <span className='text-xl font-bold'>
-            Creative Commission Platform
-          </span>
-        </div>
-        <div className='flex items-center'>
-          {loading ? (
-            <span className='text-lg font-semibold text-gray-700'>
-              Loading...
+    <header className='bg-white shadow-sm h-16 sticky top-0 z-50'>
+      <div className='h-full max-w-7xl mx-auto px-6 flex justify-between items-center'>
+        {/* Logo and Title */}
+        <Link to='/' className='flex items-center'>
+          <div className='flex items-center'>
+            {logo ? (
+              <img
+                src={logo}
+                alt='Logo'
+                className='h-8 w-auto mr-3'
+                onError={(e) => {
+                  e.target.style.display = "none"
+                }}
+              />
+            ) : null}
+            <span className='text-xl font-bold text-gray-800 hidden sm:inline'>
+              Creative Commission Platform
             </span>
-          ) : error ? (
-            <span className='text-lg font-semibold text-red-600'>{error}</span>
-          ) : user ? (
-            <span className='text-lg font-semibold text-gray-700'>
-              Welcome, {user.username}!
+            <span className='text-xl font-bold text-gray-800 sm:hidden'>
+              CCP
             </span>
-          ) : (
-            <>
-              <Link to='/login'>
-                <button className='ml-4 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300'>
-                  Login
-                </button>
-              </Link>
-              <Link to='/register'>
-                <button className='ml-2 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300'>
-                  Create User
-                </button>
-              </Link>
-            </>
-          )}
-          {user && (
-            <button
-              className='ml-2 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300'
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          )}
-        </div>
+          </div>
+        </Link>
+
+        {/* User Actions */}
+        <div className='flex items-center gap-4'>{renderUserActions()}</div>
       </div>
     </header>
   )

@@ -4,57 +4,143 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom"
-import { Provider } from "react-redux"
+import { Provider, useSelector, useDispatch } from "react-redux"
+import { useEffect, useState } from "react"
 import store from "./redux/store"
+import { checkAuthStatus } from "./redux/actions/userActions"
 import ArtistProfile from "./pages/ArtistProfile"
 import UserCreationPage from "./pages/UserCreationPage"
 import Dashboard from "./pages/Dashboard"
 import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
+import WelcomePage from "./pages/WelcomePage"
+import { Loader2 } from "lucide-react"
 
-function App() {
+// Loading Screen Component
+const LoadingScreen = () => (
+  <div className='min-h-screen flex items-center justify-center'>
+    <div className='flex flex-col items-center gap-4'>
+      <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
+      <p className='text-gray-600'>Loading...</p>
+    </div>
+  </div>
+)
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  return isAuthenticated ? children : <Navigate to='/login' replace />
+}
+
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
+}
+
+const AuthWrapper = ({ children }) => {
+  const dispatch = useDispatch()
+  const [isChecking, setIsChecking] = useState(true)
+  const { loading } = useSelector((state) => state.user)
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        await dispatch(checkAuthStatus())
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    initAuth()
+  }, [dispatch])
+
+  if (isChecking || loading) {
+    return <LoadingScreen />
+  }
+
+  return children
+}
+
+const App = () => {
   return (
     <Provider store={store}>
-      <Router>
-        <Routes>
-          <Route
-            path='/'
-            element={
-              <PageLayout>
-                <Dashboard />
-              </PageLayout>
-            }
-          />
-          <Route
-            path='/profile/:id'
-            element={
-              <PageLayout>
-                <ArtistProfile />
-              </PageLayout>
-            }
-          />
-          <Route
-            path='/register'
-            element={
-              <PageLayout>
-                <UserCreationPage />
-              </PageLayout>
-            }
-          />
-          <Route
-            path='/login'
-            element={
-              <PageLayout>
-                <Login />
-              </PageLayout>
-            }
-          />
-          {/* Optional: Redirect any unmatched route to the root */}
-          <Route path='*' element={<Navigate to='/' />} />
-        </Routes>
-      </Router>
+      <AuthWrapper>
+        <Router>
+          <Routes>
+            <Route path='/' element={<ProtectedOrPublic />} />
+            <Route
+              path='/welcome'
+              element={
+                <PageLayout>
+                  <WelcomePage />
+                </PageLayout>
+              }
+            />
+            <Route
+              path='/register'
+              element={
+                <PublicRoute>
+                  <PageLayout>
+                    <UserCreationPage />
+                  </PageLayout>
+                </PublicRoute>
+              }
+            />
+            <Route
+              path='/login'
+              element={
+                <PublicRoute>
+                  <PageLayout>
+                    <Login />
+                  </PageLayout>
+                </PublicRoute>
+              }
+            />
+            <Route
+              path='/dashboard'
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <Dashboard />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/profile/:id'
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <ArtistProfile />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path='*' element={<Navigate to='/' replace />} />
+          </Routes>
+        </Router>
+      </AuthWrapper>
     </Provider>
   )
+}
+
+const ProtectedOrPublic = () => {
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <LoadingScreen />
+  }
+
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/welcome"} replace />
 }
 
 export default App

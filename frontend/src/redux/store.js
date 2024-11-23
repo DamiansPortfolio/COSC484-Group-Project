@@ -1,10 +1,29 @@
-import { configureStore } from "@reduxjs/toolkit" // Import configureStore from Redux Toolkit
-import { Provider } from "react-redux"
-import rootReducer from "./reducers" // Import your root reducer
+import { configureStore } from "@reduxjs/toolkit"
+import rootReducer from "./reducers"
+
+const initialState = {
+  user: {
+    user: null,
+    loading: false,
+    error: null,
+    isAuthenticated: false,
+  },
+  recommendations: {
+    artists: [],
+    loading: false,
+    error: null,
+    selectedSkill: "",
+    sortOption: "rating",
+  },
+}
 
 const store = configureStore({
-  reducer: rootReducer, // Set your root reducer
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware(), // Use the default middleware (includes thunk)
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: true,
+    }),
+  preloadedState: initialState,
 })
 
 export default store

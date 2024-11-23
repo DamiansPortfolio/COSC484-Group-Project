@@ -1,3 +1,6 @@
+import axios from "axios"
+import CryptoJS from "crypto-js"
+import API_CONFIG, { getApiConfig } from "../../config/api.js"
 import {
   USER_REGISTER_REQUEST,
   USER_REGISTER_SUCCESS,
@@ -6,78 +9,138 @@ import {
   USER_LOGIN_SUCCESS,
   USER_LOGIN_FAIL,
   USER_LOGOUT,
+  CHECK_AUTH_REQUEST,
+  CHECK_AUTH_SUCCESS,
+  CHECK_AUTH_FAIL,
 } from "../constants/userConstants"
 
-// Register user action
-export const registerUser = (userData) => {
-  return async (dispatch) => {
-    dispatch({ type: USER_REGISTER_REQUEST })
-    console.log("Registering user with data:", userData)
-    try {
-      const response = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      })
+const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Registration error response:", errorData)
-        throw new Error("Failed to register user")
-      }
+// Initialize API with environment logging
+getApiConfig()
 
-      const data = await response.json()
-      console.log("Registration response data:", data)
-      dispatch({ type: USER_REGISTER_SUCCESS, payload: data })
+// API instance creation with environment-aware configuration
+const api = axios.create({
+  baseURL: API_CONFIG.baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+})
 
-      // Automatically log in the user after registration
-      dispatch({ type: USER_LOGIN_SUCCESS, payload: data })
-    } catch (error) {
-      console.error("Registration error:", error)
-      dispatch({ type: USER_REGISTER_FAIL, payload: error.message })
+// Encryption/Decryption utilities
+const encryptData = (data) => {
+  return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString()
+}
+
+const decryptData = (encryptedData) => {
+  const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY)
+  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8))
+}
+
+// Local storage operations
+const setUserData = (user) => {
+  const encryptedUser = encryptData(user)
+  localStorage.setItem("encryptedUser", encryptedUser)
+}
+
+const getUserData = () => {
+  const encryptedUser = localStorage.getItem("encryptedUser")
+  return encryptedUser ? decryptData(encryptedUser) : null
+}
+
+const clearUserData = () => {
+  localStorage.removeItem("encryptedUser")
+  localStorage.removeItem("token")
+}
+
+// Action creators
+export const loginUser = (userData) => async (dispatch) => {
+  dispatch({ type: USER_LOGIN_REQUEST })
+  try {
+    const { data } = await api.post("api/users/login", userData)
+    dispatch({ type: USER_LOGIN_SUCCESS, payload: { user: data.user } })
+    setUserData(data.user)
+    localStorage.setItem("token", data.token)
+    return { success: true, data }
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Login failed"
+    dispatch({ type: USER_LOGIN_FAIL, payload: errorMessage })
+    return { success: false, error: errorMessage }
+  }
+}
+
+export const registerUser = (userData) => async (dispatch) => {
+  dispatch({ type: USER_REGISTER_REQUEST })
+  try {
+    const { data } = await api.post("api/users/register", userData)
+    dispatch({ type: USER_REGISTER_SUCCESS, payload: { user: data.user } })
+    setUserData(data.user)
+    localStorage.setItem("token", data.token)
+    return { success: true, data }
+  } catch (error) {
+    dispatch({
+      type: USER_REGISTER_FAIL,
+      payload: error.response?.data?.message || "Registration failed",
+    })
+    throw error
+  }
+}
+
+export const logoutUser = () => async (dispatch) => {
+  try {
+    await api.post("api/users/logout")
+  } catch (error) {
+    console.warn("Logout backend call failed:", error)
+  } finally {
+    clearUserData()
+    dispatch({ type: USER_LOGOUT })
+  }
+}
+
+export const checkAuthStatus = () => async (dispatch) => {
+  dispatch({ type: CHECK_AUTH_REQUEST })
+  const storedUser = getUserData()
+  const token = localStorage.getItem("token")
+  if (storedUser && token) {
+    dispatch({ type: CHECK_AUTH_SUCCESS, payload: { user: storedUser } })
+    return true
+  } else {
+    dispatch({ type: CHECK_AUTH_FAIL })
+    return false
+  }
+}
+
+// Axios interceptors
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token")
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`
     }
-  }
-}
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
-// Login user action
-export const loginUser = (userData) => {
-  return async (dispatch) => {
-    dispatch({ type: USER_LOGIN_REQUEST })
-    console.log("Logging in user with data:", userData)
-    try {
-      const response = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Login error response:", errorData)
-        throw new Error(errorData.message || "Failed to log in user")
-      }
-
-      const data = await response.json()
-      console.log("Login response data:", data)
-
-      const { user, token } = data
-      console.log("Extracted user:", user)
-
-      dispatch({ type: USER_LOGIN_SUCCESS, payload: { user, token } })
-      localStorage.setItem("user", JSON.stringify(user))
-      localStorage.setItem("token", token)
-    } catch (error) {
-      console.error("Login error:", error)
-      dispatch({ type: USER_LOGIN_FAIL, payload: error.message })
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      clearUserData()
     }
+    return Promise.reject(error)
   }
+)
+
+// Utility functions
+export const isAuthenticated = () => {
+  const user = getUserData()
+  const token = localStorage.getItem("token")
+  return !!(user && token)
 }
 
-// Logout user action
-export const logoutUser = () => {
-  return (dispatch) => {
-    localStorage.removeItem("user") // Clear user data from local storage
-    localStorage.removeItem("token") // Clear token from local storage
-    dispatch({ type: USER_LOGOUT }) // Dispatch logout action
-  }
+export const getToken = () => {
+  return localStorage.getItem("token")
 }
+
+export { api, getUserData }

@@ -6,38 +6,68 @@ import {
   USER_LOGIN_SUCCESS,
   USER_LOGIN_FAIL,
   USER_LOGOUT,
+  CHECK_AUTH_REQUEST,
+  CHECK_AUTH_SUCCESS,
+  CHECK_AUTH_FAIL,
 } from "../constants/userConstants"
 
-// Check local storage for user data on app start
-const userFromLocalStorage = localStorage.getItem("user")
-  ? JSON.parse(localStorage.getItem("user"))
-  : null
-
 const initialState = {
-  user: userFromLocalStorage, // Set initial user state from local storage
+  user: null,
   loading: false,
   error: null,
+  isAuthenticated: false,
 }
 
 const userReducer = (state = initialState, action) => {
   switch (action.type) {
     case USER_REGISTER_REQUEST:
     case USER_LOGIN_REQUEST:
-      return { ...state, loading: true, error: null } // Set loading to true on request
+      return { ...state, loading: true, error: null }
+
     case USER_REGISTER_SUCCESS:
     case USER_LOGIN_SUCCESS:
-      localStorage.setItem("user", JSON.stringify(action.payload.user)) // Save user data to local storage
-      localStorage.setItem("token", action.payload.token) // Save token to local storage
-      return { ...state, user: action.payload.user, loading: false } // Store the registered or logged-in user
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        error: null,
+      }
+
     case USER_REGISTER_FAIL:
     case USER_LOGIN_FAIL:
-      return { ...state, error: action.payload, loading: false } // Store the error message
+      return {
+        ...state,
+        error: action.payload,
+        loading: false,
+        isAuthenticated: false,
+      }
+
     case USER_LOGOUT:
-      localStorage.removeItem("user") // Clear user data from local storage
-      localStorage.removeItem("token") // Clear token from local storage
-      return { ...initialState, user: null } // Reset user state on logout
+      return initialState
+
+    case CHECK_AUTH_REQUEST:
+      return { ...state, loading: true }
+
+    case CHECK_AUTH_SUCCESS:
+      return {
+        ...state,
+        user: action.payload.user,
+        loading: false,
+        isAuthenticated: true,
+        error: null,
+      }
+
+    case CHECK_AUTH_FAIL:
+      return {
+        ...state,
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+        error: null,
+      }
+
     default:
-      return state // Return the current state for unknown actions
+      return state
   }
 }
 

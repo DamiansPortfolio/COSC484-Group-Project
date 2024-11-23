@@ -7,23 +7,64 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+/node_modules
+**/node_modules
+
+# Build outputs
 dist
 dist-ssr
 *.local
+build/
+dist/
+coverage/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-
-# In future we will add these .env files to ignore, but for initial setup 
-# we will keep them in.
+# Environment files
 .env
+.env.*
+.env.local
+.env.production
+.env.development
+
+# System files
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# AWS specific
+.aws-sam/
+.aws-sam/build/
+samconfig.toml
+samconfig.*.toml
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Debug files
+.debug/
+debug.log
+debug/
+
+# Local development files
+*.dev.*
+local.*
+
+.yaml

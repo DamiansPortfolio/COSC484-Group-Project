@@ -1,73 +1,117 @@
 import React, { useState, useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { loginUser } from "../redux/actions/userActions"
-import { useNavigate } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import { loginUser, isAuthenticated } from "../redux/actions/userActions"
+import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert } from "@/components/ui/alert" // Import Alert if you have it set up
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [formError, setFormError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading, error, user } = useSelector((state) => state.user) // Get user state
+
+  // Navigation effect
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard")
+    }
+  }, [navigate])
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      setFormError("")
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Logging in with:", { username, password }) // Log the input for debugging
-    await dispatch(loginUser({ username, password })) // Wait for the login action to complete
+    setFormError("")
+    if (!username.trim() || !password.trim()) {
+      setFormError("Please enter both username and password")
+      return
+    }
+    setLoading(true)
+    try {
+      const result = await dispatch(loginUser({ username, password }))
+      if (!result.success) {
+        setFormError(result.error)
+      } else if (isAuthenticated()) {
+        navigate("/dashboard")
+      }
+    } catch (error) {
+      setFormError("An error occurred during login. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Navigate to the home page if the user is authenticated and there is no error
-  useEffect(() => {
-    if (user && !error) {
-      navigate("/") // Navigate to the home page after a successful login
-    }
-  }, [user, error, navigate]) // Run useEffect when user or error changes
-
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-      <Card className='w-full max-w-md p-6'>
+    <div className='flex justify-center py-8'>
+      <Card className='w-full max-w-md'>
         <CardHeader>
           <CardTitle className='text-center text-2xl font-bold'>
             Login
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className='flex flex-col'>
-            <Input
-              type='text'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder='Username'
-              required
-              className='mb-4'
-            />
-            <Input
-              type='password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder='Password'
-              required
-              className='mb-4'
-            />
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='space-y-2'>
+              <Input
+                type='text'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder='Username'
+                required
+                disabled={loading}
+                className='w-full'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Input
+                type='password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder='Password'
+                required
+                disabled={loading}
+                className='w-full'
+              />
+            </div>
+            {formError && (
+              <Alert variant='destructive'>
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
             <Button
               type='submit'
               disabled={loading}
-              className='bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
+              className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200'
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
-          {error && (
-            <Alert className='mt-4' type='error'>
-              {error}
-            </Alert>
-          )}
         </CardContent>
+        <CardFooter className='flex justify-center'>
+          <p className='text-sm text-gray-600'>
+            Don't have an account?{" "}
+            <Link to='/register' className='text-blue-500 hover:text-blue-600'>
+              Register here
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

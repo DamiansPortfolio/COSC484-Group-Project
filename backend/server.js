@@ -1,59 +1,91 @@
-import dotenv from "dotenv" // Load environment variables
-import express from "express" // Web framework for Node.js
-import cors from "cors" // Middleware for CORS
-import { connectToDatabase } from "./db.js" // Database connection function
-import userRoutes from "./routes/userRoutes.js"
-import artistRoutes from "./routes/artistRoutes.js"
-import requesterRoutes from "./routes/requesterRoutes.js"
-import jobRoutes from "./routes/jobsRoutes.js"
+import express from "express"
+import cors from "cors"
+import dotenv from "dotenv"
+import userRoutes from "./routes/UserRoutes/userRoutes.js"
+import artistRoutes from "./routes/ArtistRoutes/artistRoutes.js"
+import requesterRoutes from "./routes/RequesterRoutes/requesterRoutes.js"
+import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
+import { config, connectDB } from "./config/config.js"
 
-dotenv.config({ path: "../.env" }) // Load .env variables
+// Load environment variables
+dotenv.config()
 
-// Create an Express application
+// Log environment mode at startup
+console.log("Starting server in mode:", process.env.NODE_ENV)
+
 const app = express()
 
-// Middleware configuration
-const configureMiddleware = () => {
-  // Configure CORS
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"
-  app.use(cors({ origin: frontendUrl }))
+// Add CORS middleware
+app.use(cors(config.cors))
 
-  app.use(express.json()) // Parse incoming JSON requests
-}
+// Middleware
+app.use(express.json())
 
-// Route definitions
-const configureRoutes = () => {
-  app.get("/", (req, res) => res.send("Welcome to the website connection API"))
-  app.use("/api/users", userRoutes) // Base route for user operations
-  app.use("/api/artists", artistRoutes) // Base route for artist profile operations
-  app.use("/api/requesters", requesterRoutes) // Base route for requester profile operations
-  app.use("/api/jobs", jobRoutes)
-}
+app.use((req, res, next) => {
+  const authHeader = req.headers["authorization"]
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    req.token = authHeader.substring(7)
+  }
+  next()
+})
 
-// Start the server
+// Register API routes
+app.use("/api/users", userRoutes)
+app.use("/api/artists", artistRoutes)
+app.use("/api/requesters", requesterRoutes)
+app.use("/api/jobs", jobRoutes)
+
+// Wildcard route
+app.all("*", (req, res) => {
+  res.status(404).json({
+    message: `The endpoint ${req.originalUrl} does not exist.`,
+    method: req.method,
+    availableEndpoints: [
+      "/api/users",
+      "/api/artists",
+      "/api/requesters",
+      "/api/jobs",
+    ],
+  })
+})
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).json({
+    message: err.message,
+  })
+})
+
+// Server startup logic
 const startServer = async () => {
   try {
-    await connectToDatabase() // Connect to MongoDB
-    configureMiddleware() // Configure app middleware
-    configureRoutes() // Configure app routes
+    // Always connect to MongoDB regardless of environment
+    await connectDB()
 
-    const PORT = process.env.PORT || 5001
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-  } catch (err) {
-    console.error("Failed to start server:", err)
+    // Only start Express server in local mode
+    if (process.env.NODE_ENV === "local") {
+      app.listen(config.port, () => {
+        console.log(
+          `Server running in ${config.name} mode on port ${config.port}`
+        )
+        console.log(`Frontend URL: ${config.cors.origin}`)
+      })
+    } else {
+      console.log(
+        "Running in production mode - server will be handled by AWS Lambda"
+      )
+    }
+  } catch (error) {
+    console.error("Failed to start server:", error)
     process.exit(1)
   }
 }
 
-// Global error handling for uncaught exceptions and rejections
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err)
-  process.exit(1)
-})
+// Start server based on environment
+if (process.env.NODE_ENV !== "test") {
+  // Don't auto-start in test environment
+  startServer()
+}
 
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err)
-  process.exit(1)
-})
-
-startServer() // Start the server
+export default app

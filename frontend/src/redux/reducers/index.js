@@ -1,8 +1,10 @@
 import { combineReducers } from "redux"
-import userReducer from "./userReducer" // Import your user reducer
+import userReducer from "./userReducer"
+import recommendationsReducer from "./recommendationsReducer"
 
 const rootReducer = combineReducers({
-  user: userReducer, // Add other reducers here
+  user: userReducer,
+  recommendations: recommendationsReducer,
 })
 
 export default rootReducer
