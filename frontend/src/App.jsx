@@ -14,12 +14,23 @@ import Dashboard from "./pages/Dashboard"
 import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
 import WelcomePage from "./pages/WelcomePage"
+import { Loader2 } from "lucide-react"
+
+// Loading Screen Component
+const LoadingScreen = () => (
+  <div className='min-h-screen flex items-center justify-center'>
+    <div className='flex flex-col items-center gap-4'>
+      <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
+      <p className='text-gray-600'>Loading...</p>
+    </div>
+  </div>
+)
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.user)
 
   if (loading) {
-    return <div>Loading...</div>
+    return <LoadingScreen />
   }
 
   return isAuthenticated ? children : <Navigate to='/login' replace />
@@ -29,7 +40,7 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.user)
 
   if (loading) {
-    return <div>Loading...</div>
+    return <LoadingScreen />
   }
 
   return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
@@ -38,18 +49,22 @@ const PublicRoute = ({ children }) => {
 const AuthWrapper = ({ children }) => {
   const dispatch = useDispatch()
   const [isChecking, setIsChecking] = useState(true)
+  const { loading } = useSelector((state) => state.user)
 
   useEffect(() => {
     const initAuth = async () => {
-      await dispatch(checkAuthStatus()) // Always dispatch checkAuthStatus
-      setIsChecking(false)
+      try {
+        await dispatch(checkAuthStatus())
+      } finally {
+        setIsChecking(false)
+      }
     }
 
     initAuth()
   }, [dispatch])
 
-  if (isChecking) {
-    return <div>Loading...</div>
+  if (isChecking || loading) {
+    return <LoadingScreen />
   }
 
   return children
@@ -119,7 +134,12 @@ const App = () => {
 }
 
 const ProtectedOrPublic = () => {
-  const { isAuthenticated } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user)
+
+  if (loading) {
+    return <LoadingScreen />
+  }
+
   return <Navigate to={isAuthenticated ? "/dashboard" : "/welcome"} replace />
 }
 

@@ -1,11 +1,7 @@
 import serverless from "@vendia/serverless-express"
 import { connectDB } from "./config/config.js"
-import express from "./server.js"
-import dotenv from "dotenv"
-
-dotenv.config()
-
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
+import app from "./server.js"
+import { config } from "./config/config.js"
 
 export const handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -14,7 +10,7 @@ export const handler = async (event, context) => {
   console.log("Request Headers:", JSON.stringify(event.headers))
 
   const corsHeaders = {
-    "Access-Control-Allow-Origin": FRONTEND_URL,
+    "Access-Control-Allow-Origin": config.cors.origin,
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-Requested-With",
@@ -33,10 +29,7 @@ export const handler = async (event, context) => {
       ),
     ])
 
-    const serverlessHandler = serverless({
-      app: express,
-      respondWithErrors: true,
-    })
+    const serverlessHandler = serverless({ app, respondWithErrors: true })
 
     const response = await Promise.race([
       serverlessHandler(event, context),
@@ -46,9 +39,6 @@ export const handler = async (event, context) => {
     ])
 
     response.headers = { ...response.headers, ...corsHeaders }
-
-    console.log("Response headers:", JSON.stringify(response.headers))
-
     return response
   } catch (error) {
     console.error("Lambda handler error:", error)

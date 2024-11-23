@@ -1,5 +1,6 @@
 import axios from "axios"
 import CryptoJS from "crypto-js"
+import API_CONFIG, { getApiConfig } from "../../config/api.js"
 import {
   USER_REGISTER_REQUEST,
   USER_REGISTER_SUCCESS,
@@ -15,12 +16,18 @@ import {
 
 const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY
 
+// Initialize API with environment logging
+getApiConfig()
+
+// API instance creation with environment-aware configuration
 const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://5wdp70pq50.execute-api.us-east-1.amazonaws.com/dev/",
+  baseURL: API_CONFIG.baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 })
 
+// Encryption/Decryption utilities
 const encryptData = (data) => {
   return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString()
 }
@@ -30,6 +37,7 @@ const decryptData = (encryptedData) => {
   return JSON.parse(bytes.toString(CryptoJS.enc.Utf8))
 }
 
+// Local storage operations
 const setUserData = (user) => {
   const encryptedUser = encryptData(user)
   localStorage.setItem("encryptedUser", encryptedUser)
@@ -45,6 +53,7 @@ const clearUserData = () => {
   localStorage.removeItem("token")
 }
 
+// Action creators
 export const loginUser = (userData) => async (dispatch) => {
   dispatch({ type: USER_LOGIN_REQUEST })
   try {
@@ -101,6 +110,7 @@ export const checkAuthStatus = () => async (dispatch) => {
   }
 }
 
+// Axios interceptors
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token")
@@ -122,6 +132,7 @@ api.interceptors.response.use(
   }
 )
 
+// Utility functions
 export const isAuthenticated = () => {
   const user = getUserData()
   const token = localStorage.getItem("token")

@@ -1,14 +1,16 @@
 import React, { useState } from "react"
 import { useLocation } from "react-router-dom"
-import { isAuthenticated, getUserData } from "../redux/actions/userActions"
+import { useSelector } from "react-redux"
+import { isAuthenticated } from "../redux/actions/userActions"
 import PageHeader from "./PageHeader"
 import Sidebar from "./Sidebar"
+import { Loader2 } from "lucide-react"
 
 const PageLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const location = useLocation()
+  const { user, loading } = useSelector((state) => state.user)
   const authenticated = isAuthenticated()
-  const user = getUserData()
 
   const publicRoutes = ["/login", "/register"]
   const welcomeRoute = "/welcome"
@@ -31,7 +33,17 @@ const PageLayout = ({ children }) => {
     !publicRoutes.includes(location.pathname) &&
     location.pathname !== welcomeRoute
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
+  if (
+    loading &&
+    !publicRoutes.includes(location.pathname) &&
+    location.pathname !== welcomeRoute
+  ) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
+      </div>
+    )
+  }
 
   if (location.pathname === welcomeRoute) {
     return <div>{children}</div>
@@ -50,20 +62,20 @@ const PageLayout = ({ children }) => {
           <div className='fixed left-0 top-16 h-[calc(100vh-64px)]'>
             <Sidebar
               sidebarOpen={sidebarOpen}
-              toggleSidebar={toggleSidebar}
+              toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
               user={user}
             />
           </div>
         )}
         <main
           className={`
-          flex-1
-          transition-all 
-          duration-300 
-          ease-in-out
-          ${location.pathname === "/" ? "p-0" : "p-6"}
-          ${showSidebar ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-0"}
-        `}
+            flex-1
+            transition-all 
+            duration-300 
+            ease-in-out
+            ${location.pathname === "/" ? "p-0" : "p-6"}
+            ${showSidebar ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-0"}
+          `}
         >
           {children}
         </main>
