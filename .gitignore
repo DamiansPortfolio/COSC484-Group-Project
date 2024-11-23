@@ -67,4 +67,4 @@ debug/
 *.dev.*
 local.*
 
-.yaml
+*.yaml
