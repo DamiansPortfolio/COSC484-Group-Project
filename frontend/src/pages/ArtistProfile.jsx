@@ -37,7 +37,7 @@ const ArtistProfile = () => {
         const token = localStorage.getItem("token")
 
         const artistResponse = await fetch(
-          `${import.meta.env.VITE_API_URL}api/artists/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/artists/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

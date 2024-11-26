@@ -15,6 +15,8 @@ import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
 import WelcomePage from "./pages/WelcomePage"
 import { Loader2 } from "lucide-react"
+import AvailableJobs from "./pages/AvailableJobs"
+import IndividualJob from "./pages/IndividualJob"
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -121,6 +123,26 @@ const App = () => {
                 <ProtectedRoute>
                   <PageLayout>
                     <ArtistProfile />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <AvailableJobs />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs/:jobId"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <IndividualJob />
                   </PageLayout>
                 </ProtectedRoute>
               }
