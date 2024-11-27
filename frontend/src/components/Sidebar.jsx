@@ -38,8 +38,8 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         name: "Available Jobs",
         icon: Briefcase,
         path: "/jobs",
-        implemented: false,
-        comingSoon: true,
+        implemented: true,
+        comingSoon: false,
       },
       {
         name: "My Applications",

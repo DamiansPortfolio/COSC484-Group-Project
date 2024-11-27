@@ -5,6 +5,7 @@ import {
   Navigate,
 } from "react-router-dom"
 import { Provider, useSelector, useDispatch } from "react-redux"
+import { useParams } from 'react-router-dom'
 import { useEffect, useState } from "react"
 import store from "./redux/store"
 import { checkAuthStatus } from "./redux/actions/userActions"
@@ -15,6 +16,10 @@ import Login from "./components/Login"
 import PageLayout from "./components/PageLayout"
 import WelcomePage from "./pages/WelcomePage"
 import { Loader2 } from "lucide-react"
+import AvailableJobs from "./pages/AvailableJobs"
+import IndividualJob from "./pages/IndividualJob"
+import RequesterProfile from "./pages/RequesterProfile"
+
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -70,6 +75,40 @@ const AuthWrapper = ({ children }) => {
   return children
 }
 
+const ProfileRouter = () => {
+  const { id } = useParams()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isArtist, setIsArtist] = useState(false)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/artists/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        
+        setIsArtist(response.ok)
+        setLoading(false)
+      } catch (error) {
+        setError("Failed to load profile")
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [id])
+
+  if (loading) return <LoadingScreen />
+  if (error) return <div>Error: {error}</div>
+
+  return isArtist ? <ArtistProfile /> : <RequesterProfile />
+}
+
 const App = () => {
   return (
     <Provider store={store}>
@@ -120,7 +159,27 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <PageLayout>
-                    <ArtistProfile />
+                    <ProfileRouter />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <AvailableJobs />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs/:jobId"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <IndividualJob />
                   </PageLayout>
                 </ProtectedRoute>
               }
