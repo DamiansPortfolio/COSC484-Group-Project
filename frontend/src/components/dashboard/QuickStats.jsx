@@ -59,17 +59,17 @@ const QuickStats = () => {
     return [
       {
         title: "Active Jobs",
-        value: data.activeJobs || 0,
+        value: typeof data.activeJobs === 'number' ? data.activeJobs : 0, //fixed zero not showing not functional but atleats the zero shows up
         description: "Currently posted jobs",
       },
       {
         title: "Total Applications",
-        value: data.totalApplications || 0,
+        value: typeof data.totalApplications === 'number' ? data.totalApplications : 0,  //fixed zero not showing not functional but atleats the zero shows up
         description: "Received applications",
       },
       {
         title: "Completed Jobs",
-        value: data.completedJobs || 0,
+        value: typeof data.completedJobs === 'number' ? data.completedJobs : 0,  //fixed zero not showing not functional but atleats the zero shows up
         description: "Successfully finished",
       },
     ]

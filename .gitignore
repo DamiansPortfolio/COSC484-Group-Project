@@ -69,3 +69,4 @@ local.*
 
 *.yaml
 backend/template.yaml
+clusters.txt

@@ -14,7 +14,7 @@ import mongoose from "mongoose"
 const portfolioItemSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
   title: { type: String, required: true },
-  description: { type: String, default: "" },
+  description: { type: String, default: "Default Description" },
   category: {
     type: String,
     enum: [
@@ -64,12 +64,12 @@ const reviewFromRequesterSchema = new mongoose.Schema({
 
 const experienceSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  company: { type: String, default: "" },
+  company: { type: String, default: "Default Company" },
   period: {
     from: { type: Date },
     to: { type: Date },
   },
-  description: { type: String, default: "" },
+  description: { type: String, default: "Default Description" },
 })
 
 const artistSchema = new mongoose.Schema(
@@ -91,24 +91,24 @@ const artistSchema = new mongoose.Schema(
           },
         },
       ],
-      secondary: { type: [String], default: [] },
+      secondary: { type: [String], default: ["Being Awesome"] },
     },
     experience: { type: [experienceSchema], default: [] },
     education: [
       {
-        institution: { type: String, default: "" },
-        degree: { type: String, default: "" },
-        field: { type: String, default: "" },
+        institution: { type: String, default: "default institution" },
+        degree: { type: String, default: "default degree" },
+        field: { type: String, default: "default field" },
         year: { type: Number, min: 1900, max: new Date().getFullYear() },
       },
     ],
-    bio: { type: String, default: "" },
+    bio: { type: String, default: "Default Bio" },
     socialLinks: {
-      website: { type: String, default: "" },
-      instagram: { type: String, default: "" },
-      artstation: { type: String, default: "" },
-      behance: { type: String, default: "" },
-      linkedin: { type: String, default: "" },
+      website: { type: String, default: "http://www.staggeringbeauty.com" },
+      instagram: { type: String, default: "@socialmediasucks" },
+      artstation: { type: String, default: "@artstation" },
+      behance: { type: String, default: "@behance" },
+      linkedin: { type: String, default: "@getmeajobprettypls" },
     },
     professionalInfo: {
       availability: {
