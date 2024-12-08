@@ -72,6 +72,10 @@ const UserCreationPage = () => {
       setFormError("Username is required")
       return false
     }
+    if (!formData.name.trim()) {     // Added this check
+      setFormError("Name is required")
+      return false
+    }
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       setFormError("Please enter a valid email address")
       return false
@@ -83,36 +87,36 @@ const UserCreationPage = () => {
     return true
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setFormError("")
+const handleSubmit = async (e) => {
+  e.preventDefault()
+  setFormError("")
 
-    if (!validateForm()) {
-      return
+  if (!validateForm()) {
+    return
+  }
+
+  try {
+    const result = await dispatch(registerUser(formData))
+    if (result.success) {
+      navigate("/dashboard")  // Add this line to redirect on success
+    } else {
+      setFormError(result.error || "Unable to create account. Please try again.")
     }
+  } catch (error) {
+    setFormError(
+      error.response?.data?.message ||
+        "Unable to create account. Please try again."
+    )
 
-    try {
-      const result = await dispatch(registerUser(formData))
-      if (!result.success) {
-        setFormError(
-          result.error || "Unable to create account. Please try again."
-        )
-      }
-    } catch (error) {
-      setFormError(
-        error.response?.data?.message ||
-          "Unable to create account. Please try again."
-      )
-
-      if (error.response?.data?.message?.includes("already exists")) {
-        if (error.response.data.message.includes("email")) {
-          setFormData((prev) => ({ ...prev, email: "" }))
-        } else if (error.response.data.message.includes("username")) {
-          setFormData((prev) => ({ ...prev, username: "" }))
-        }
+    if (error.response?.data?.message?.includes("already exists")) {
+      if (error.response.data.message.includes("email")) {
+        setFormData((prev) => ({ ...prev, email: "" }))
+      } else if (error.response.data.message.includes("username")) {
+        setFormData((prev) => ({ ...prev, username: "" }))
       }
     }
   }
+}
 
   return (
     <div className='flex justify-center py-8'>

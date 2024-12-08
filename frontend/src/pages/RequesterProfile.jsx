@@ -22,21 +22,17 @@ const ProfileSkeleton = () => (
 )
 
 // Company Information Component
-const CompanyInfo = ({ company }) => (
+const RequesterInfo = ({ requesterData }) => (
   <Card>
     <CardContent className='flex items-center space-x-4 p-6'>
       <div className='w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-2xl font-bold'>
-        {company?.name?.[0] || '?'}
+        {requesterData.userId?.name?.[0] || '?'}
       </div>
       <div className='flex-grow'>
-        <h1 className='text-2xl font-bold'>{company?.name || 'Company Name Not Available'}</h1>
-        {company?.website && (
-          <a href={company.website} className='text-blue-500 hover:underline' target='_blank' rel='noopener noreferrer'>
-            {company.website}
-          </a>
-        )}
-        {company?.description && (
-          <p className='text-gray-600 mt-2'>{company.description}</p>
+        <h1 className='text-2xl font-bold'>{requesterData.userId?.name || 'Name Not Available'}</h1>
+        <p className='text-gray-600'>@{requesterData.userId?.username}</p>
+        {requesterData.userId?.location && (
+          <p className='text-gray-500 mt-1'>{requesterData.userId.location}</p>
         )}
       </div>
     </CardContent>
@@ -185,7 +181,7 @@ const RequesterProfile = () => {
 
   return (
     <div className='space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-      <CompanyInfo company={requesterData.company} />
+      <RequesterInfo requesterData={requesterData} />
       <Statistics statistics={requesterData.statistics} />
       <RecentJobs jobs={requesterData.jobs} />
       <ReviewsSection 

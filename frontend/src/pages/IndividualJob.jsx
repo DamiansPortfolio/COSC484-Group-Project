@@ -6,7 +6,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -14,31 +13,37 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, MessageSquare, Send } from "lucide-react"
 import { checkAuthStatus } from "../redux/actions/userActions"
 
-const RequesterInfo = ({ requester, onProfileClick }) => (
-  <Card className="mb-6">
-    <CardContent className="p-6">
-      <div className="flex items-center space-x-4">
-        <Avatar 
-          className="h-20 w-20 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={onProfileClick}
-        >
-          <AvatarFallback>
-            {requester.company?.name?.[0] || '?'}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h3 className="text-lg font-semibold">
-            {requester.company?.name || 'Company Name Not Available'}
-          </h3>
-          <div className="flex items-center mt-1">
-            <span className="text-yellow-500 mr-1">★</span>
-            <span>{requester.averageRating?.toFixed(1) || 'No ratings'}</span>
+const RequesterInfo = ({ requesterId, requesterDetails, onProfileClick }) => {
+  // Handle both the simple requesterId and full requester object cases
+  const hasFullDetails = requesterId?.userId || requesterDetails?.userId;
+  
+  return (
+    <Card className="mb-6">
+      <CardContent className="p-6">
+        <div className="flex items-center space-x-4">
+          <Avatar 
+            className="h-20 w-20 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={onProfileClick}
+          >
+            <AvatarImage src={hasFullDetails?.avatarUrl} />
+            <AvatarFallback>?</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="text-lg font-semibold">
+              {hasFullDetails?.name || hasFullDetails?.username || 'Job Poster'}
+            </h3>
+            {requesterId && (
+              <div className="flex items-center mt-1">
+                <span className="text-yellow-500 mr-1">★</span>
+                <span>{requesterId.averageRating?.toFixed(1) || 'No ratings'}</span>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-    </CardContent>
-  </Card>
-)
+      </CardContent>
+    </Card>
+  );
+};
 
 const JobDetails = ({ job }) => (
   <Card className="mb-6">
@@ -98,30 +103,9 @@ const JobDetails = ({ job }) => (
           </div>
         </div>
       )}
-
-      {job.milestones?.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Milestones</h4>
-          <div className="space-y-2">
-            {job.milestones.map((milestone, index) => (
-              <div key={index} className="border p-3 rounded-lg">
-                <p className="font-medium">{milestone.title}</p>
-                {milestone.description && (
-                  <p className="text-sm text-gray-600">{milestone.description}</p>
-                )}
-                {milestone.deadline && (
-                  <p className="text-sm text-gray-500">
-                    Due: {new Date(milestone.deadline).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </CardContent>
   </Card>
-)
+);
 
 const IndividualJob = () => {
   const { jobId } = useParams()
@@ -131,6 +115,7 @@ const IndividualJob = () => {
   const [job, setJob] = useState(null)
   const [jobLoading, setJobLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [requesterDetails, setRequesterDetails] = useState(null)
 
   useEffect(() => {
     if (!user && !loading) {
@@ -141,12 +126,40 @@ const IndividualJob = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/${jobId}`)
+        const token = localStorage.getItem("token")
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/jobs/${jobId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        )
+        
+        if (!response.ok) {
+          throw new Error("Failed to load job details")
+        }
+        
         const data = await response.json()
         setJob(data)
+
+        // If we have a requesterId, try to fetch requester details
+        if (data.requesterId) {
+          try {
+            const requesterResponse = await fetch(
+              `${import.meta.env.VITE_API_URL}/api/requesters/${data.requesterId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` }
+              }
+            )
+            if (requesterResponse.ok) {
+              const requesterData = await requesterResponse.json()
+              setRequesterDetails(requesterData)
+            }
+          } catch (err) {
+            console.warn("Failed to fetch requester details:", err)
+          }
+        }
       } catch (err) {
-        setError("Failed to load job details")
-        console.error("Error fetching job:", err)
+        setError(err.message)
       } finally {
         setJobLoading(false)
       }
@@ -158,10 +171,16 @@ const IndividualJob = () => {
   }, [jobId, user])
 
   const handleMessageClick = () => {
+    const requesterId = job.requesterId?._id || job.requesterId
+    if (!requesterId) {
+      console.error("Cannot message - requesterId not available")
+      return
+    }
+    
     navigate('/messages', {
       state: {
         artistId: user._id,
-        requesterId: job.requesterId._id,
+        requesterId: requesterId,
         jobId: job._id
       }
     })
@@ -178,11 +197,11 @@ const IndividualJob = () => {
   if (!user || error || !job) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Error</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>{error || "Unable to load job details. Please try again later."}</p>
+        <CardContent className="p-6 text-center">
+          <p className="text-red-500">{error || "Unable to load job details"}</p>
+          <Button onClick={() => navigate(-1)} className="mt-4">
+            Go Back
+          </Button>
         </CardContent>
       </Card>
     )
@@ -190,14 +209,20 @@ const IndividualJob = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
-        <header className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-            <p className="text-gray-600">{job.description}</p>
-        </header>
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+        <p className="text-gray-600">{job.description}</p>
+      </header>
 
       <RequesterInfo 
-        requester={job.requesterId} 
-        onProfileClick={() => navigate(`/profile/${job.requesterId.userId._id}`)}
+        requesterId={job.requesterId}
+        requesterDetails={requesterDetails}
+        onProfileClick={() => {
+          const userId = requesterDetails?.userId?._id || job.requesterId?.userId?._id
+          if (userId) {
+            navigate(`/profile/${userId}`)
+          }
+        }}
       />
 
       <JobDetails job={job} />

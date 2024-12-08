@@ -3,6 +3,7 @@ import express from "express"
 import userController from "../../controllers/Users/userController.js"
 import { verifyToken } from "../../middleware/authMiddleware.js"
 
+
 const router = express.Router()
 
 router.post("/login", userController.loginUser)

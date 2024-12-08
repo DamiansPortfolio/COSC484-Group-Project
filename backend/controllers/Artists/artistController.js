@@ -11,6 +11,7 @@
 import Artist from "../../models/ArtistModels/ArtistSchema.js"
 import Job from "../../models/JobModels/JobsSchema.js"
 import mongoose from "mongoose"
+import Application from "../../models/JobModels/ApplicationSchema.js"
 
 const artistController = {
   getAllArtists: async (req, res) => {
@@ -198,6 +199,60 @@ const artistController = {
       res.status(500).json({ message: "Error fetching activities" })
     }
   },
+
+  getArtistApplications: async (req, res) => {
+    try {
+      const userId = req.user.id || req.user._id;
+      
+      const artist = await Artist.findOne({ userId });
+      if (!artist) {
+        return res.status(404).json({ message: "Artist profile not found." });
+      }
+
+      const applications = await Application.find({ artistProfileId: artist._id })
+      .populate({
+        path: "jobId",
+        select: "title description category type requesterId",
+        populate: {
+          path: "requesterId",
+          select: "userId",
+          populate: {
+            path: "userId",
+            select: "username",
+          },
+        },
+      })
+      .sort({ appliedAt: -1 }); // Sort by most recent applications
+
+    console.log("Found applications:", applications); // Debug log
+    
+    const formattedApplications = applications.map((app) => ({
+      _id: app._id,
+      status: app.status || "pending",
+      appliedAt: app.appliedAt,
+      coverLetter: app.coverLetter,
+      proposedAmount: app.proposedAmount,
+      job: {
+        _id: app.jobId._id,
+        title: app.jobId.title,
+        description: app.jobId.description,
+        category: app.jobId.category,
+        type: app.jobId.type,
+        requester: {
+          username: app.jobId.requesterId?.userId?.username || "Unknown User",
+        },
+      },
+    }));
+
+      console.log("Processed applications:", formattedApplications); // Debug log
+
+      res.json(formattedApplications);
+    } catch (error) {
+      console.error("Error fetching artist applications:", error);
+      res.status(500).json({ message: "Error fetching applications." });
+    }
+  },
+
 }
 
 export default artistController

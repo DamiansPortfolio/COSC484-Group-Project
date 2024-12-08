@@ -11,6 +11,8 @@
   import Requester from "../../models/RequesterModels/RequesterSchema.js"
   import mongoose from "mongoose"
   import Job from "../../models/JobModels/JobsSchema.js"
+  import applications from "../../models/JobModels/ApplicationSchema.js"
+  //THIS IS USED ^^^ THE QUICK STATS NEED IT LEAVE IT HERE DESITE WHAT VSCODE TELL YOU.
 
   const requesterController = {
     getAllRequesters: async (req, res) => {
@@ -28,26 +30,16 @@
     getRequesterProfile: async (req, res) => {
       try {
         const requesterProfile = await Requester.findOne({
-          userId: new mongoose.Types.ObjectId(req.params.userId),
+          userId: req.params.userId,  // Removed manual ObjectId conversion
+        }).populate({
+          path: "userId",
+          select: "name username avatarUrl location",
         })
-          .populate("userId", "name username location")
-          .populate("jobs", "title status createdAt")
-
+    
         if (!requesterProfile) {
-          return res.status(404).json({ message: "Requester profile not found" })
+          return res.status(404).json({ message: "Requester profile not found." })
         }
-
-        const isOwner =
-          requesterProfile.userId.toString() === req.user._id.toString()
-
-        if (!isOwner) {
-          const publicProfile = requesterProfile.toObject()
-          delete publicProfile.paymentMethods
-          delete publicProfile.preferences
-          delete publicProfile.statistics
-          return res.json(publicProfile)
-        }
-
+    
         res.json(requesterProfile)
       } catch (error) {
         console.error("Error retrieving requester profile:", error)
@@ -87,38 +79,24 @@
 
     getRequesterJobs: async (req, res) => {
       try {
-        const requester = await Requester.findOne({
-          userId: new mongoose.Types.ObjectId(req.params.userId),
-        }).populate({
-          path: "jobs",
-          select: "title status category createdAt",
-          populate: {
-            path: "applications.artistId",
-            select: "userId skills averageRating",
-          },
-        })
-
-        if (!requester) {
-          return res.status(404).json({ message: "Requester not found" })
+        // Get jobs directly using the authenticated user's ID
+        const jobs = await Job.find({ requesterId: req.user._id })
+          .populate({
+            path: 'applications',
+            populate: {
+              path: 'artistId',
+              select: 'name username avatarUrl'
+            }
+          });
+    
+        if (!jobs) {
+          return res.status(404).json({ message: "No jobs found" });
         }
-
-        const isOwner = req.params.userId === req.user._id.toString()
-
-        if (!isOwner) {
-          const publicJobs = requester.jobs.map((job) => ({
-            _id: job._id,
-            title: job.title,
-            status: job.status,
-            category: job.category,
-            createdAt: job.createdAt,
-          }))
-          return res.json(publicJobs)
-        }
-
-        res.json(requester.jobs)
+    
+        res.status(200).json(jobs);
       } catch (error) {
-        console.error("Error fetching requester jobs:", error)
-        res.status(500).json({ message: "Internal server error." })
+        console.error("Error fetching jobs:", error);
+        res.status(500).json({ message: "Internal server error" });
       }
     },
 

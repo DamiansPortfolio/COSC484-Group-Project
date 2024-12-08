@@ -19,6 +19,13 @@ import { Loader2 } from "lucide-react"
 import AvailableJobs from "./pages/AvailableJobs"
 import IndividualJob from "./pages/IndividualJob"
 import RequesterProfile from "./pages/RequesterProfile"
+import MyApplications from "./pages/MyApplications"
+import JobApplicationForm from "./pages/JobApplicationForm"
+import PostJob from "./pages/PostJob"
+import MyJobs from "./pages/MyJobs";
+import JobStatus from './pages/JobStatus';
+import IndividualApplication from "./pages/IndividualApplication"
+
 
 
 // Loading Screen Component
@@ -180,6 +187,66 @@ const App = () => {
                 <ProtectedRoute>
                   <PageLayout>
                     <IndividualJob />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <MyApplications />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs/:jobId/apply"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <JobApplicationForm />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/jobs/create"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <PostJob />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+            path="/jobs/my-posts"
+            element={
+              <ProtectedRoute>
+                <PageLayout>
+                  <MyJobs />
+                </PageLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+              path="/jobs/:jobId/status"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <JobStatus />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications/:applicationId"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <IndividualApplication />
                   </PageLayout>
                 </ProtectedRoute>
               }

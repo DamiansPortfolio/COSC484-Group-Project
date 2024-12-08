@@ -39,29 +39,6 @@ const milestoneSchema = new mongoose.Schema({
   ],
 })
 
-const applicationSchema = new mongoose.Schema({
-  artistId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Artist",
-    required: true,
-  },
-  coverLetter: { type: String },
-  proposedAmount: { type: Number },
-  status: {
-    type: String,
-    enum: ["pending", "shortlisted", "accepted", "rejected"],
-    default: "pending",
-  },
-  appliedAt: { type: Date, default: Date.now },
-  portfolio: [
-    {
-      itemId: { type: mongoose.Schema.Types.ObjectId },
-      title: { type: String },
-      imageUrl: { type: String },
-    },
-  ],
-})
-
 const jobSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -99,7 +76,10 @@ const jobSchema = new mongoose.Schema({
   },
   requirements: [requirementSchema],
   milestones: [milestoneSchema],
-  applications: [applicationSchema],
+  applications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Application"
+}],
   status: {
     type: String,
     enum: ["draft", "open", "in_progress", "completed", "cancelled"],
@@ -119,5 +99,5 @@ const jobSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 })
 
-const Job = mongoose.model("Job", jobSchema, "jobs")
+const Job = mongoose.model("Job", jobSchema, "job_listings")  // Changed collection name to "job_listings"
 export default Job

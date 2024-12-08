@@ -19,9 +19,14 @@ const JobPreviewCard = ({ job }) => {
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold text-lg">{job.title}</h3>
-          <Badge variant="outline" className="text-sm">
-            {job.type}
-          </Badge>
+          <div className="flex gap-2">
+            <Badge variant="outline" className="text-sm">
+              {job.type}
+            </Badge>
+            <Badge variant="outline" className="text-sm">
+              {job.status}
+            </Badge>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -29,7 +34,7 @@ const JobPreviewCard = ({ job }) => {
             <Badge variant="secondary">{job.category}</Badge>
             {job.requirements?.map((req, index) => (
               <Badge key={index} variant="secondary">
-                {req.experienceLevel}
+                {req.skillRequired} ({req.experienceLevel})
               </Badge>
             ))}
           </div>
@@ -37,6 +42,12 @@ const JobPreviewCard = ({ job }) => {
           <p className="text-sm font-medium text-muted-foreground">
             Budget: {job.budget?.currency || 'USD'} {job.budget?.min} - {job.budget?.max}
           </p>
+
+          {job.timeline && (
+            <p className="text-sm text-gray-500">
+              Timeline: {new Date(job.timeline.startDate).toLocaleDateString()} - {new Date(job.timeline.deadline).toLocaleDateString()}
+            </p>
+          )}
 
           <p className="text-sm line-clamp-2 text-gray-600">
             {job.description}
