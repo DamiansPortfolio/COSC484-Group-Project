@@ -61,6 +61,54 @@ const userController = {
         return res.status(400).json({ message: "All fields are required" })
       }
 
+      if (username.length < 3 ||
+        username.length > 24 ||
+        password.length <= 7 ||
+        /\d/.test(password) === false ||
+        /[^a-zA-Z0-9]/.test(password) === false ||
+        /[A-Z]/.test(password) === false) {
+
+        var error = []
+
+        //test if the username is between 3 and 24 characters
+        if (username.length < 3) {
+          error.push("Username must be greater than 3 characters")
+        } else if (username.length > 24) {
+          error.push("Username must be less than 24 characters")
+        }
+
+        //test if password if greater than 8 characters
+        if (password.length <= 7) {
+          error.push("Password must be greater than 8 characters")
+        }
+
+        //test if there is a number in the password
+        if (!/\d/.test(password)) {
+          error.push("Password must contain at least one number")
+        }
+
+        //test if there is a special character in the password
+        if (!/[^a-zA-Z0-9]/.test(password)) {
+          error.push("Password must contain a special character")
+        }
+
+        //test if there is a capital letter in the password
+        if (!(/[A-Z]/.test(password))) {
+          error.push("password must contain a capital letter")
+        }
+
+        var errMessage = ""
+        error.forEach(function (x, i) {
+          if (i === error.length - 1) {
+            errMessage += x;
+          } else {
+            errMessage += x + ", "
+          }
+        })
+
+        return res.status(400).json({ message: errMessage })
+      }
+
       const existingUser = await User.findOne({
         $or: [
           { username: username.toLowerCase() },
@@ -98,7 +146,7 @@ const userController = {
 
       const userData = user.toObject()
       delete userData.passwordHash
-      
+
       res.status(201).json({
         user: userData,
         token,
@@ -107,7 +155,7 @@ const userController = {
 
     } catch (error) {
       console.error("Registration error:", error)
-      res.status(500).json({ 
+      res.status(500).json({
         message: error.message || "Failed to create user"
       })
     }
@@ -164,7 +212,7 @@ const userController = {
       res.status(500).json({ message: "Error updating user" })
     }
   },
-  
+
   getProfileType: async (req, res) => {
     try {
       const { id } = req.params;
