@@ -1,4 +1,4 @@
-# Creative Project Commissioning Platform
+# Palette
 
 A web application designed to connect creative professionals in the game development and animation industries with project owners seeking talent. The platform facilitates job postings, portfolio showcases, and a seamless application process.
 
@@ -12,20 +12,14 @@ A web application designed to connect creative professionals in the game develop
 
 ## 1. Project Overview
 
-The platform enables requesters to post creative project listings and artists to apply for opportunities. It features comprehensive user authentication, portfolio management, and a Redux-powered state management system.
+Palette is a platform that connects creative professionals in the game development and animation industries with project owners, known as requesters, seeking talent for their creative projects. The platform allows requesters to create detailed job listings that outline the requirements and scope of their projects, including desired skills, deadlines, and budget. Artists can browse these listings, apply for opportunities, and showcase their portfolios to demonstrate their expertise. Palette streamlines the application process by enabling seamless submission of portfolios, tracking application statuses, and facilitating direct communication between artists and requesters. This efficient workflow fosters collaboration and helps artists and requesters find the perfect match for their creative needs.
+
 
 ## 2. Core Features
 
-### 2.1 User Management
+### 2.1 Artist Features
 
-- Role-based authentication (Requester/Artist)
-- JWT-based secure sessions
-- Customizable user profiles
-- Password encryption with bcrypt
-
-### 2.2 Artist Features
-
-- Portfolio management with image uploads
+- Portfolio management with image uploads (future release)
 - Skill showcase
 - Application tracking
 - Custom profile pages
@@ -37,12 +31,10 @@ The platform enables requesters to post creative project listings and artists to
 - Project status tracking
 - Profile customization
 
-### 2.4 Platform Features
+### 2.4 User Features
 
-- Redux-powered state management
-- Secure authentication flow
-- Responsive UI with Tailwind CSS
-- Real-time form validation
+- Messaging system to connect users
+
 
 ## 3. Tech Stack
 
@@ -61,6 +53,9 @@ The platform enables requesters to post creative project listings and artists to
 - MongoDB + Mongoose
 - JWT Authentication
 - Bcrypt Password Hashing
+
+### Testing
+- Playwright test suite
 
 ### Development Tools
 
@@ -92,13 +87,33 @@ git clone https://github.com/DamiansPortfolio/COSC484-Group-Project.git
 npm run install:all
 ```
 
-3. **Create .env file in project root directory**
+3. **Create .env file in frontend and backend directories**
 
 ```bash
 touch .env
 ```
 
-**Verify .env file with team**
+**Backend .env file**
+```
+# For local testing uncomment this
+NODE_ENV="local"
+
+# Common settings
+FRONTEND_URL= (Your frontend local host connection here)
+MONGODB_URI= (Your mongodb connection URI here)
+JWT_SECRET= (Your JWT secret here)
+REFRESH_TOKEN_SECRET= (Your refresh token secret here)
+PORT= (Your backend port here)
+```
+
+**Frontend .env file**
+```
+# For local testing uncomment this
+VITE_API_URL= (Local host port of your choosing)
+
+# Encryption key
+VITE_ENCRYPTION_KEY= (Your encryption key here)
+```
 
 4. **Start development servers from project root directory**
 
@@ -123,73 +138,18 @@ npm run start:backend   # For backend only
 - [x] Frontend routing
 - [x] Basic API integration
 - [x] Database models and schemas
+- [x] User messaging system
+- [x] Job posting system
+- [x] Application management
 
 ### In Progress
 
-- [ ] Job posting system
-- [ ] Application management
+- [ ] Reviews - Complete review and rating system
+- [ ] Payment Tracking - Project payment status monitoring
+- [ ] Leave Reviews - Complete review and rating system
 - [ ] Review and rating system
-- [ ] Messaging system
 - [ ] Advanced search and filtering
 - [ ] Email notifications
-
-### Project Structure
-
-root/
-├── frontend/
-│ ├── src/
-│ │ ├── assets/
-│ │ │ └── commission.svg
-│ │ ├── components/
-│ │ │ ├── artist_profile/
-│ │ │ │ ├── PortfolioGallery.jsx
-│ │ │ │ ├── ProfileHeader.jsx
-│ │ │ │ ├── ReviewsSection.jsx
-│ │ │ │ └── SkillsList.jsx
-│ │ │ ├── dashboard/
-│ │ │ │ ├── QuickStats.jsx
-│ │ │ │ ├── RecentActivity.jsx
-│ │ │ │ └── Recommendations.jsx
-│ │ │ └── ui/
-│ │ ├── lib/
-│ │ │ └── utils.ts
-│ │ ├── pages/
-│ │ │ ├── ArtistProfile.jsx
-│ │ │ ├── Dashboard.jsx
-│ │ │ └── UserCreationPage.jsx
-│ │ ├── redux/
-│ │ │ ├── actions/
-│ │ │ │ └── userActions.js
-│ │ │ ├── constants/
-│ │ │ │ └── userConstants.js
-│ │ │ ├── reducers/
-│ │ │ │ ├── index.js
-│ │ │ │ └── userReducer.js
-│ │ │ └── store.js
-│ │ ├── App.jsx
-│ │ └── main.jsx
-│ └── index.html
-├── backend/
-│ ├── controllers/
-│ │ ├── artistProfileController.js
-│ │ ├── jobsController.js
-│ │ ├── requesterProfileController.js
-│ │ └── userController.js
-│ ├── models/
-│ │ ├── ArtistSchema.js
-│ │ ├── JobsSchema.js
-│ │ ├── RequesterSchema.js
-│ │ └── User.js
-│ ├── routes/
-│ │ ├── artistRoutes.js
-│ │ ├── jobsRoutes.js
-│ │ ├── requesterRoutes.js
-│ │ └── userRoutes.js
-│ ├── config.js
-│ ├── db.js
-│ └── server.js
-├── .env
-└── package.json
 
 ### Core Implementation Details
 
@@ -206,22 +166,7 @@ root/
 - **Authentication**: JWT-based authentication with secure cookie storage
 - **Database**: MongoDB with Mongoose ODM
 - **Security**: Password hashing with bcrypt, CORS configuration
-
-#### Database Models
-
-- **User Model**: Base user information and authentication
-- **Artist Profile**: Portfolio and skill management
-- **Requester Profile**: Job posting and management
-- **Job Listings**: Project details and applications
-
-### Next Steps
-
-1. Complete the job posting system implementation
-2. Integrate the application management flow
-3. Implement the review and rating system
-4. Set up the messaging system
-5. Add advanced search and filtering capabilities
-6. Configure email notification system
+- **Security**: Encryption using crypto-js to encrypt user data
 
 ## License
 
