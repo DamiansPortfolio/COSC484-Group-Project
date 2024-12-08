@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import QuickStats from "../components/dashboard/QuickStats"
 import { checkAuthStatus } from "../redux/actions/userActions"
 
+// Component to render a preview card for an individual application
 const ApplicationPreviewCard = ({ application }) => {
   const navigate = useNavigate()
   const jobData = application.job || application.jobId || {};
@@ -17,6 +18,7 @@ const ApplicationPreviewCard = ({ application }) => {
     if (typeof jobData === 'string') return 'Job Details Available on Click';
     return jobData.title || 'Untitled Job';
   };
+
 
   const getJobCategory = () => {
     if (typeof jobData === 'string') return null;
@@ -84,12 +86,14 @@ const MyApplications = () => {
   const [applicationsLoading, setApplicationsLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Check authentication status if user is not loaded
   useEffect(() => {
     if (!user && !loading) {
       dispatch(checkAuthStatus())
     }
   }, [dispatch, user, loading])
 
+  // Fetch user applications
   useEffect(() => {
     const fetchApplications = async () => {
       if (!user?._id) return;

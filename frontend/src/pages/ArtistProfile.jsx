@@ -7,6 +7,7 @@ import ReviewsSection from "../components/artist_profile/ReviewsSection"
 import { Skeleton } from "@/components/ui/skeleton"
 
 // Loading skeleton component
+// Provides a placeholder UI while artist data is being fetched
 const ProfileSkeleton = () => (
   <div className='space-y-6 p-8'>
     <div className='space-y-4'>
@@ -23,6 +24,7 @@ const ProfileSkeleton = () => (
   </div>
 )
 
+// Main Artist Profile component
 const ArtistProfile = () => {
   const { id } = useParams()
   const [artistData, setArtistData] = useState(null)
@@ -31,6 +33,7 @@ const ArtistProfile = () => {
   const [activeCategory, setActiveCategory] = useState("all")
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false)
 
+  // Fetch artist data when component mounts or artist ID changes
   useEffect(() => {
     const fetchArtistData = async () => {
       try {
@@ -61,6 +64,7 @@ const ArtistProfile = () => {
           ...new Set(processedPortfolioItems.map((item) => item.category)),
         ]
 
+        // Update artist data state with processed information
         setArtistData({
           ...artist,
           name: artist.userId?.name,
@@ -84,6 +88,7 @@ const ArtistProfile = () => {
     return <ProfileSkeleton />
   }
 
+   // Display error message if artist data fetch fails
   if (error) {
     return (
       <div className='flex flex-col items-center justify-center h-[50vh]'>
@@ -99,12 +104,14 @@ const ArtistProfile = () => {
     )
   }
 
+  // Filter portfolio items based on selected category and featured status
   const filteredPortfolioItems = artistData.portfolioItems
     .filter((item) => (showFeaturedOnly ? item.featured : true))
     .filter((item) =>
       activeCategory === "all" ? true : item.category === activeCategory
     )
 
+  // Render the complete artist profile
   return (
     <div className='space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
       <ProfileHeader

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, MessageSquare, Send } from "lucide-react"
 import { checkAuthStatus } from "../redux/actions/userActions"
 
+// Component to display requester information
 const RequesterInfo = ({ requesterId, requesterDetails, onProfileClick }) => {
   // Handle both the simple requesterId and full requester object cases
   const hasFullDetails = requesterId?.userId || requesterDetails?.userId;
@@ -45,6 +46,7 @@ const RequesterInfo = ({ requesterId, requesterDetails, onProfileClick }) => {
   );
 };
 
+// Component to display job details
 const JobDetails = ({ job }) => (
   <Card className="mb-6">
     <CardHeader>
@@ -107,6 +109,7 @@ const JobDetails = ({ job }) => (
   </Card>
 );
 
+// Main component to display individual job details
 const IndividualJob = () => {
   const { jobId } = useParams()
   const navigate = useNavigate()
@@ -117,12 +120,14 @@ const IndividualJob = () => {
   const [error, setError] = useState(null)
   const [requesterDetails, setRequesterDetails] = useState(null)
 
+  // Check authentication status if user is not loaded
   useEffect(() => {
     if (!user && !loading) {
       dispatch(checkAuthStatus())
     }
   }, [dispatch, user, loading])
 
+  // Fetch job details when jobId or user changes
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -186,6 +191,7 @@ const IndividualJob = () => {
     })
   }
 
+  // Show loading spinner if data is still loading
   if (loading || jobLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -194,6 +200,7 @@ const IndividualJob = () => {
     )
   }
 
+  // Show error message if there was an error or job details are not available
   if (!user || error || !job) {
     return (
       <Card>
@@ -207,6 +214,7 @@ const IndividualJob = () => {
     )
   }
 
+  //Main component render
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <header className="mb-8">

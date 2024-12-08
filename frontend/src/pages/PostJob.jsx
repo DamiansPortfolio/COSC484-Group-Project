@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useSelector } from "react-redux"
 import { Loader2 } from "lucide-react"
 
+// Defining the PostJob component
 const PostJob = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -51,11 +52,13 @@ const PostJob = () => {
     }
   })
 
+  // Handler function for form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
+    // Checking if the user is authenticated
     if (!user?._id) {
       setError("User not authenticated")
       setLoading(false)
@@ -66,10 +69,7 @@ const PostJob = () => {
       const token = localStorage.getItem("token")
       
       // Using our backend POST /api/jobs endpoint (from jobController.js)
-      // This endpoint already handles:
-      // 1. Creating the job
-      // 2. Updating requester statistics
-      // 3. Adding job reference to requester
+      // Makes a POST request to create the job, update requester statistics, add job reference to requester
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs`, {
         method: "POST",
         headers: {

@@ -7,16 +7,20 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { checkAuthStatus } from "../redux/actions/userActions"
 
+// Dashboard component
+// Provides personalized dashboard view based on user role
 const Dashboard = () => {
   const { user, loading } = useSelector((state) => state.user)
   const dispatch = useDispatch()
 
+  // Verify user authentication on component mount
   useEffect(() => {
     if (!user && !loading) {
       dispatch(checkAuthStatus())
     }
   }, [dispatch, user, loading])
 
+  // Loading state handler
   if (loading) {
     return (
       <div className='min-h-[calc(100vh-4rem)] flex items-center justify-center'>
@@ -25,6 +29,7 @@ const Dashboard = () => {
     )
   }
 
+  // Authentication error handler
   if (!user) {
     return (
       <Card>
@@ -38,6 +43,7 @@ const Dashboard = () => {
     )
   }
 
+  // Main dashboard render
   return (
     <div className='min-h-[calc(100vh-4rem)]'>
       <header className='mb-8'>

@@ -10,12 +10,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
 
+// Define a component to display job requirements as badges
 const JobRequirementBadge = ({ requirement }) => (
   <Badge variant="secondary" className="text-sm">
     {requirement.skillRequired} ({requirement.experienceLevel})
   </Badge>
 )
 
+// Main component for job application form
 const JobApplicationForm = () => {
   const { jobId } = useParams()
   const navigate = useNavigate()
@@ -32,12 +34,14 @@ const JobApplicationForm = () => {
     portfolio: []
   })
 
+  // Check authentication status
   useEffect(() => {
     if (!user && !userLoading) {
       dispatch(checkAuthStatus())
     }
   }, [dispatch, user, userLoading])
 
+  // Fetch job details from the API
   useEffect(() => {
     const fetchJob = async () => {
       if (!user?._id) return
@@ -74,6 +78,7 @@ const JobApplicationForm = () => {
     }
   }, [jobId, user])
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
@@ -116,6 +121,7 @@ const JobApplicationForm = () => {
     }
   }
 
+  // Display loading spinner while fetching data
   if (userLoading || loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -124,6 +130,7 @@ const JobApplicationForm = () => {
     )
   }
 
+  // Prompt user to log in if not authenticated
   if (!user) {
     return (
       <Card>
@@ -137,6 +144,7 @@ const JobApplicationForm = () => {
     )
   }
 
+  // Display error message if job not found
   if (!job) {
     return (
       <Card>
@@ -149,6 +157,7 @@ const JobApplicationForm = () => {
     )
   }
 
+  // Check if user has already applied for the job
   const existingApplication = job.applications?.find(
     app => app.artistId?.toString() === user._id?.toString()
   )
@@ -174,6 +183,7 @@ const JobApplicationForm = () => {
     )
   }
 
+  // Display message if user has already applied
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <header className="mb-8">

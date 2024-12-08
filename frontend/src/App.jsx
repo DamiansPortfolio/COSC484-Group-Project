@@ -38,6 +38,7 @@ const LoadingScreen = () => (
   </div>
 )
 
+// ProtectedRoute component to ensure only authenticated users can access certain pages
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.user)
 
@@ -48,6 +49,7 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to='/login' replace />
 }
 
+// PublicRoute component to prevent authenticated users from accessing certain pages
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.user)
 
@@ -58,6 +60,7 @@ const PublicRoute = ({ children }) => {
   return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
 }
 
+// AuthWrapper component to check authentication status on page load
 const AuthWrapper = ({ children }) => {
   const dispatch = useDispatch()
   const [isChecking, setIsChecking] = useState(true)
@@ -82,12 +85,14 @@ const AuthWrapper = ({ children }) => {
   return children
 }
 
+// ProfileRouter component to render either ArtistProfile or RequesterProfile based on the user's profile type
 const ProfileRouter = () => {
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isArtist, setIsArtist] = useState(false)
 
+  // Fetch user profile based on ID to determine if the user is an artist
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -116,6 +121,7 @@ const ProfileRouter = () => {
   return isArtist ? <ArtistProfile /> : <RequesterProfile />
 }
 
+// Main App component rendering all routes within a Router context
 const App = () => {
   return (
     <Provider store={store}>
@@ -259,6 +265,7 @@ const App = () => {
   )
 }
 
+// ProtectedOrPublic component to redirect users based on authentication status
 const ProtectedOrPublic = () => {
   const { isAuthenticated, loading } = useSelector((state) => state.user)
 

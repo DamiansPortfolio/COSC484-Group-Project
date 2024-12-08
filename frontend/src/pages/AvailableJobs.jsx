@@ -8,6 +8,8 @@ import { Loader2 } from "lucide-react"
 import QuickStats from "../components/dashboard/QuickStats"
 import { checkAuthStatus } from "../redux/actions/userActions"
 
+// Job Preview Card Component
+// Displays individual job details in a clickable card format
 const JobPreviewCard = ({ job }) => {
   const navigate = useNavigate()
 
@@ -58,6 +60,7 @@ const JobPreviewCard = ({ job }) => {
   )
 }
 
+// Available Jobs Main component
 const AvailableJobs = () => {
   const { user, loading } = useSelector((state) => state.user)
   const dispatch = useDispatch()
@@ -65,12 +68,14 @@ const AvailableJobs = () => {
   const [jobsLoading, setJobsLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Checks authentication status on component mount
   useEffect(() => {
     if (!user && !loading) {
       dispatch(checkAuthStatus())
     }
   }, [dispatch, user, loading])
 
+  // Fetch available jobs when user is authenticated
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -90,6 +95,7 @@ const AvailableJobs = () => {
     }
   }, [user])
 
+  // Loading state handler
   if (loading || jobsLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -98,6 +104,7 @@ const AvailableJobs = () => {
     )
   }
 
+  // User authentication error handler
   if (!user) {
     return (
       <Card>
@@ -111,6 +118,7 @@ const AvailableJobs = () => {
     )
   }
 
+  // Job fetch error handler
   if (error) {
     return (
       <Card>
@@ -124,6 +132,7 @@ const AvailableJobs = () => {
     )
   }
 
+  // Main component render
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <header className="mb-8">

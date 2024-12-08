@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Calendar, DollarSign, Clock, Users } from "lucide-react";
 
+// Component to display a job status detail with an icon, label, and value
 const JobStatusDetail = ({ label, value, icon: Icon }) => (
   <div className="flex items-center space-x-2">
     <Icon className="w-5 h-5 text-gray-500" />
@@ -14,6 +15,7 @@ const JobStatusDetail = ({ label, value, icon: Icon }) => (
   </div>
 );
 
+// Component to display an applicant's information in a card
 const ApplicantCard = ({ applicant }) => {
   const navigate = useNavigate();
   const user = applicant.artistUser;
@@ -38,6 +40,7 @@ const ApplicantCard = ({ applicant }) => {
   );
 };
 
+// Main component to display job status and applicants
 const JobStatus = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -45,6 +48,7 @@ const JobStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch job details and applications when component mounts or jobId changes
   useEffect(() => {
     const fetchJobDetails = async () => {
       const token = localStorage.getItem("token");
@@ -116,6 +120,7 @@ const JobStatus = () => {
     fetchJobDetails();
   }, [jobId]);
 
+  // Display loading spinner if data is still being fetched
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -124,6 +129,7 @@ const JobStatus = () => {
     );
   }
 
+  // Display error message if there was an error fetching data
   if (error || !job) {
     return (
       <Card>
@@ -137,6 +143,7 @@ const JobStatus = () => {
     );
   }
 
+  // Display job details and applicants component
   return (
     <div className="space-y-6">
       <header>

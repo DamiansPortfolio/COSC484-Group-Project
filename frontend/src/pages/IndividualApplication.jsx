@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Calendar, DollarSign, Clock, Users } from "lucide-react";
 
+// Job Status Detail component
+// Renders individual job detail with icon and label
 const JobStatusDetail = ({ label, value, icon: Icon }) => (
   <div className="flex items-center space-x-2">
     <Icon className="w-5 h-5 text-gray-500" />
@@ -15,6 +17,8 @@ const JobStatusDetail = ({ label, value, icon: Icon }) => (
   </div>
 );
 
+// Applicant Card component
+// Displays individual applicant information
 const ApplicantCard = ({ applicant, onProfileClick }) => {
   const user = applicant.profile?.userId;
 
@@ -38,6 +42,8 @@ const ApplicantCard = ({ applicant, onProfileClick }) => {
   );
 };
 
+// Job Status main component
+// Displays detailed information about a specific job and its applicants
 const JobStatus = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -45,6 +51,8 @@ const JobStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetches Job Details
+  // Retrieves job information, applications, and applicant profiles
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
@@ -63,6 +71,7 @@ const JobStatus = () => {
           throw new Error("Failed to fetch job details");
         }
 
+        // Fetch detailed application and artist profile information
         const data = await response.json();
         const applications = await Promise.all(
           data.applications.map(async (applicationId) => {
@@ -82,6 +91,7 @@ const JobStatus = () => {
 
             const application = await applicationResponse.json();
 
+            // Fetch artist profile details
             const artistResponse = await fetch(
               `${import.meta.env.VITE_API_URL}/api/artists/${application.artistProfileId}`,
               {
@@ -105,6 +115,7 @@ const JobStatus = () => {
           })
         );
 
+        // Update job state with fetched data
         setJob({ ...data, applications });
       } catch (err) {
         console.error("Error:", err);
@@ -117,10 +128,12 @@ const JobStatus = () => {
     fetchJobDetails();
   }, [jobId]);
 
+  // Navigate to artist profile
   const handleProfileClick = (artistId) => {
     navigate(`/profile/${artistId}`);
   };
 
+   // Loading State Handler
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -129,6 +142,7 @@ const JobStatus = () => {
     );
   }
 
+  // Error State Handler
   if (error || !job) {
     return (
       <Card>
@@ -142,6 +156,7 @@ const JobStatus = () => {
     );
   }
 
+   // Main Component Render
   return (
     <div className="space-y-6">
       <header>
