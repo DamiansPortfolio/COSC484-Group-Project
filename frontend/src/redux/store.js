@@ -1,5 +1,5 @@
-import { configureStore } from "@reduxjs/toolkit"
-import rootReducer from "./reducers"
+import { configureStore } from "@reduxjs/toolkit";
+import rootReducer from "./reducers";
 
 const initialState = {
   user: {
@@ -15,7 +15,14 @@ const initialState = {
     selectedSkill: "",
     sortOption: "rating",
   },
-}
+  messages: {
+    conversations: [],
+    currentConversation: [],
+    users: [],
+    loading: false,
+    error: null,
+  },
+};
 
 const store = configureStore({
   reducer: rootReducer,
@@ -24,6 +31,6 @@ const store = configureStore({
       serializableCheck: true,
     }),
   preloadedState: initialState,
-})
+});
 
-export default store
+export default store;

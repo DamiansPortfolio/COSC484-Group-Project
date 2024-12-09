@@ -3,111 +3,111 @@ import {
   Route,
   Routes,
   Navigate,
-} from "react-router-dom"
-import { Provider, useSelector, useDispatch } from "react-redux"
-import { useParams } from 'react-router-dom'
-import { useEffect, useState } from "react"
-import store from "./redux/store"
-import { checkAuthStatus } from "./redux/actions/userActions"
-import ArtistProfile from "./pages/ArtistProfile"
-import UserCreationPage from "./pages/UserCreationPage"
-import Dashboard from "./pages/Dashboard"
-import Login from "./components/Login"
-import PageLayout from "./components/PageLayout"
-import WelcomePage from "./pages/WelcomePage"
-import { Loader2 } from "lucide-react"
-import AvailableJobs from "./pages/AvailableJobs"
-import IndividualJob from "./pages/IndividualJob"
-import RequesterProfile from "./pages/RequesterProfile"
-
+} from "react-router-dom";
+import { Provider, useSelector, useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import store from "./redux/store";
+import { checkAuthStatus } from "./redux/actions/userActions";
+import ArtistProfile from "./pages/ArtistProfile";
+import UserCreationPage from "./pages/UserCreationPage";
+import Dashboard from "./pages/Dashboard";
+import Login from "./components/Login";
+import PageLayout from "./components/PageLayout";
+import WelcomePage from "./pages/WelcomePage";
+import MessagesPage from "./pages/MessagesPage";
+import { Loader2 } from "lucide-react";
+import AvailableJobs from "./pages/AvailableJobs";
+import IndividualJob from "./pages/IndividualJob";
+import RequesterProfile from "./pages/RequesterProfile";
 
 // Loading Screen Component
 const LoadingScreen = () => (
-  <div className='min-h-screen flex items-center justify-center'>
-    <div className='flex flex-col items-center gap-4'>
-      <Loader2 className='h-8 w-8 animate-spin text-blue-500' />
-      <p className='text-gray-600'>Loading...</p>
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      <p className="text-gray-600">Loading...</p>
     </div>
   </div>
-)
+);
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user);
 
   if (loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
-  return isAuthenticated ? children : <Navigate to='/login' replace />
-}
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user);
 
   if (loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
-  return isAuthenticated ? <Navigate to='/dashboard' replace /> : children
-}
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+};
 
 const AuthWrapper = ({ children }) => {
-  const dispatch = useDispatch()
-  const [isChecking, setIsChecking] = useState(true)
-  const { loading } = useSelector((state) => state.user)
+  const dispatch = useDispatch();
+  const [isChecking, setIsChecking] = useState(true);
+  const { loading } = useSelector((state) => state.user);
 
   useEffect(() => {
     const initAuth = async () => {
       try {
-        await dispatch(checkAuthStatus())
+        await dispatch(checkAuthStatus());
       } finally {
-        setIsChecking(false)
+        setIsChecking(false);
       }
-    }
+    };
 
-    initAuth()
-  }, [dispatch])
+    initAuth();
+  }, [dispatch]);
 
   if (isChecking || loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
-  return children
-}
+  return children;
+};
 
 const ProfileRouter = () => {
-  const { id } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [isArtist, setIsArtist] = useState(false)
+  const { id } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isArtist, setIsArtist] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token")
+        const token = localStorage.getItem("token");
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/api/artists/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
-        )
-        
-        setIsArtist(response.ok)
-        setLoading(false)
+        );
+
+        setIsArtist(response.ok);
+        setLoading(false);
       } catch (error) {
-        setError("Failed to load profile")
-        setLoading(false)
+        setError("Failed to load profile");
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProfile()
-  }, [id])
+    fetchProfile();
+  }, [id]);
 
-  if (loading) return <LoadingScreen />
-  if (error) return <div>Error: {error}</div>
+  if (loading) return <LoadingScreen />;
+  if (error) return <div>Error: {error}</div>;
 
-  return isArtist ? <ArtistProfile /> : <RequesterProfile />
-}
+  return isArtist ? <ArtistProfile /> : <RequesterProfile />;
+};
 
 const App = () => {
   return (
@@ -115,9 +115,9 @@ const App = () => {
       <AuthWrapper>
         <Router>
           <Routes>
-            <Route path='/' element={<ProtectedOrPublic />} />
+            <Route path="/" element={<ProtectedOrPublic />} />
             <Route
-              path='/welcome'
+              path="/welcome"
               element={
                 <PageLayout>
                   <WelcomePage />
@@ -125,7 +125,7 @@ const App = () => {
               }
             />
             <Route
-              path='/register'
+              path="/register"
               element={
                 <PublicRoute>
                   <PageLayout>
@@ -135,7 +135,7 @@ const App = () => {
               }
             />
             <Route
-              path='/login'
+              path="/login"
               element={
                 <PublicRoute>
                   <PageLayout>
@@ -145,7 +145,7 @@ const App = () => {
               }
             />
             <Route
-              path='/dashboard'
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -155,7 +155,7 @@ const App = () => {
               }
             />
             <Route
-              path='/profile/:id'
+              path="/profile/:id"
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -184,22 +184,32 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path='*' element={<Navigate to='/' replace />} />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <MessagesPage />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </AuthWrapper>
     </Provider>
-  )
-}
+  );
+};
 
 const ProtectedOrPublic = () => {
-  const { isAuthenticated, loading } = useSelector((state) => state.user)
+  const { isAuthenticated, loading } = useSelector((state) => state.user);
 
   if (loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/welcome"} replace />
-}
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/welcome"} replace />;
+};
 
-export default App
+export default App;
