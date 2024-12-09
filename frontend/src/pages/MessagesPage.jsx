@@ -63,14 +63,15 @@ const MessagesPage = () => {
 
   // Socket connection
   useEffect(() => {
-    socketRef.current = io("http://localhost:5001", { withCredentials: true })
-
-    socketRef.current.on("connect", () => {
-      setIsConnected(true)
-      if (user?._id) {
-        socketRef.current.emit("join", user._id)
+    socketRef.current = io(
+      process.env.NODE_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : "http://localhost:5001",
+      {
+        withCredentials: true,
+        transports: ["websocket", "polling"],
       }
-    })
+    )
 
     socketRef.current.on("receive-message", (message) => {
       if (message.sender._id !== user?._id) {

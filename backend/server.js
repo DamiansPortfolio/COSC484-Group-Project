@@ -29,10 +29,14 @@ app.use(express.json())
 
 const io = new Server(httpServer, {
   cors: {
-    origin: config.cors.origin,
-    methods: ["GET", "POST"],
+    origin:
+      process.env.FRONTEND_URL ||
+      "https://damiansbranch.d3kvzqxa3unfxb.amplifyapp.com",
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   },
+  transports: ["websocket", "polling"],
 })
 
 io.on("connection", (socket) => {
