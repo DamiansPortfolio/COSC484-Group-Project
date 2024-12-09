@@ -121,10 +121,10 @@ const PageHeader = () => {
               />
             ) : null}
             <span className='text-xl font-bold text-gray-800 hidden sm:inline'>
-              Creative Commission Platform
+              Palette
             </span>
             <span className='text-xl font-bold text-gray-800 sm:hidden'>
-              CCP
+              Palette
             </span>
           </div>
         </Link>
