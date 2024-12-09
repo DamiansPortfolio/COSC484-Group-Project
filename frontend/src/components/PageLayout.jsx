@@ -26,17 +26,17 @@ const PageLayout = ({ children }) => {
   const showSidebar =
     authenticated &&
     !publicRoutes.includes(location.pathname) &&
-    location.pathname !== welcomeRoute &&
+    !location.pathname.startsWith(welcomeRoute) &&
     protectedRoutes.some((route) => location.pathname.startsWith(route))
 
   const showHeader =
     !publicRoutes.includes(location.pathname) &&
-    location.pathname !== welcomeRoute
+    !location.pathname.startsWith(welcomeRoute)
 
   if (
     loading &&
     !publicRoutes.includes(location.pathname) &&
-    location.pathname !== welcomeRoute
+    !location.pathname.startsWith(welcomeRoute)
   ) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -45,8 +45,8 @@ const PageLayout = ({ children }) => {
     )
   }
 
-  if (location.pathname === welcomeRoute) {
-    return <div>{children}</div>
+  if (location.pathname.startsWith(welcomeRoute)) {
+    return <div className='min-h-screen'>{children}</div>
   }
 
   return (

@@ -14,7 +14,6 @@ test.describe("Homepage Tests", () => {
   test("Get Started, Sign In, and Create Account buttons are visible", async ({
     page,
   }) => {
-    // Use the selectors for the buttons (adjust if necessary)
     const getStartedButton = page.locator('button:has-text("Get Started")')
 
     // Select the first "Sign In" button
@@ -27,5 +26,14 @@ test.describe("Homepage Tests", () => {
     await expect(getStartedButton).toBeVisible()
     await expect(signInButton).toBeVisible()
     await expect(createAccountButton).toBeVisible()
+  })
+
+  test("Assert login button is visible when loading welcome page", async ({
+    page,
+  }) => {
+    const loginButton = page.locator('button:has-text("Login")')
+
+    // Check that both buttons are visible
+    await expect(loginButton).toBeVisible()
   })
 })
