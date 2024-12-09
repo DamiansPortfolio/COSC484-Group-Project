@@ -12,11 +12,13 @@ const QuickStats = () => {
   const fetchStats = useCallback(async () => {
     console.log("Fetching stats for user:", user?._id)
     if (!user?._id) return
+
     try {
       const endpoint =
         user.role === "artist"
-          ? `/api/artists/${user._id}/statistics`
-          : `/api/requesters/${user._id}/statistics`
+          ? `/api/statistics/artists/${user._id}`
+          : `/api/statistics/requesters/${user._id}`
+
       const { data } = await api.get(endpoint)
       setStats(formatStats(data))
     } catch (err) {
@@ -25,7 +27,7 @@ const QuickStats = () => {
     } finally {
       setLoading(false)
     }
-  }, [user._id, user.role])
+  }, [user?._id, user?.role])
 
   useEffect(() => {
     console.log("useEffect triggered for QuickStats")
@@ -34,43 +36,44 @@ const QuickStats = () => {
 
   const formatStats = (data) => {
     if (!data) return []
+
+    // Format stats for artists
     if (user?.role === "artist") {
       return [
         {
           title: "Active Applications",
-          value: data.activeApplications || 0,
-          description: "Current open applications",
+          value: data.activeApplications ?? 0,
+          description: "Current pending applications",
+        },
+        {
+          title: "Total Applications",
+          value: data.totalApplications ?? 0,
+          description: "All applications submitted",
         },
         {
           title: "Completed Jobs",
-          value: data.completedJobs || 0,
+          value: data.completedJobs ?? 0,
           description: "Successfully completed",
-        },
-        {
-          title: "Average Rating",
-          value:
-            typeof data.averageRating === "number"
-              ? data.averageRating.toFixed(1)
-              : "N/A",
-          description: "Overall rating",
         },
       ]
     }
+
+    // Format stats for requesters
     return [
       {
         title: "Active Jobs",
-        value: typeof data.activeJobs === 'number' ? data.activeJobs : 0, //fixed zero not showing not functional but atleats the zero shows up
-        description: "Currently posted jobs",
+        value: data.activeJobs ?? 0,
+        description: "Currently open positions",
       },
       {
         title: "Total Applications",
-        value: typeof data.totalApplications === 'number' ? data.totalApplications : 0,  //fixed zero not showing not functional but atleats the zero shows up
-        description: "Received applications",
+        value: data.totalApplications ?? 0,
+        description: "Applications received",
       },
       {
         title: "Completed Jobs",
-        value: typeof data.completedJobs === 'number' ? data.completedJobs : 0,  //fixed zero not showing not functional but atleats the zero shows up
-        description: "Successfully finished",
+        value: data.completedJobs ?? 0,
+        description: "Successfully completed",
       },
     ]
   }

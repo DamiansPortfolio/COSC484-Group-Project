@@ -1,10 +1,29 @@
-import express from "express";
-import jobController from "../../controllers/Jobs/jobController.js";
-import { verifyToken } from "../../middleware/authMiddleware.js";
+// routes/ApplicationRoutes/applicationsRoutes.js
+import express from "express"
+import applicationController from "../../controllers/Applications/applicationController.js"
+import { verifyToken } from "../../middleware/authMiddleware.js"
 
-const router = express.Router();
+const router = express.Router()
 
-// Route to get an application by its ID
-router.get("/:applicationId", verifyToken, jobController.getApplicationById);
+// Get single application
+router.get(
+  "/:applicationId",
+  verifyToken,
+  applicationController.getApplicationById
+)
 
-export default router;
+// Get all applications for an artist
+router.get(
+  "/artist/:artistId",
+  verifyToken,
+  applicationController.getArtistApplications
+)
+
+// Update application status
+router.patch(
+  "/:applicationId/status",
+  verifyToken,
+  applicationController.updateApplicationStatus
+)
+
+export default router

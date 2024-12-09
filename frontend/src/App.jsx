@@ -5,8 +5,9 @@ import {
   Navigate,
 } from "react-router-dom"
 import { Provider, useSelector, useDispatch } from "react-redux"
-import { useParams } from 'react-router-dom'
+import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
+import { Toaster } from "react-hot-toast"
 import store from "./redux/store"
 import { checkAuthStatus } from "./redux/actions/userActions"
 import ArtistProfile from "./pages/ArtistProfile"
@@ -22,11 +23,9 @@ import RequesterProfile from "./pages/RequesterProfile"
 import MyApplications from "./pages/MyApplications"
 import JobApplicationForm from "./pages/JobApplicationForm"
 import PostJob from "./pages/PostJob"
-import MyJobs from "./pages/MyJobs";
-import JobStatus from './pages/JobStatus';
+import MyJobs from "./pages/MyJobs"
+import JobStatus from "./pages/JobStatus"
 import IndividualApplication from "./pages/IndividualApplication"
-
-
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -98,7 +97,7 @@ const ProfileRouter = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         )
-        
+
         setIsArtist(response.ok)
         setLoading(false)
       } catch (error) {
@@ -121,6 +120,30 @@ const App = () => {
     <Provider store={store}>
       <AuthWrapper>
         <Router>
+          <Toaster
+            position='top-right'
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: "#363636",
+                color: "#fff",
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: "#4CAF50",
+                  secondary: "#fff",
+                },
+              },
+              error: {
+                duration: 4000,
+                iconTheme: {
+                  primary: "#f44336",
+                  secondary: "#fff",
+                },
+              },
+            }}
+          />
           <Routes>
             <Route path='/' element={<ProtectedOrPublic />} />
             <Route
@@ -172,7 +195,7 @@ const App = () => {
               }
             />
             <Route
-              path="/jobs"
+              path='/jobs'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -182,7 +205,7 @@ const App = () => {
               }
             />
             <Route
-              path="/jobs/:jobId"
+              path='/jobs/:jobId'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -192,7 +215,7 @@ const App = () => {
               }
             />
             <Route
-              path="/applications"
+              path='/applications'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -202,7 +225,7 @@ const App = () => {
               }
             />
             <Route
-              path="/jobs/:jobId/apply"
+              path='/jobs/:jobId/apply'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -212,7 +235,7 @@ const App = () => {
               }
             />
             <Route
-              path="/jobs/create"
+              path='/jobs/create'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -222,17 +245,17 @@ const App = () => {
               }
             />
             <Route
-            path="/jobs/my-posts"
-            element={
-              <ProtectedRoute>
-                <PageLayout>
-                  <MyJobs />
-                </PageLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-              path="/jobs/:jobId/status"
+              path='/jobs/my-posts'
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <MyJobs />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/jobs/:jobId/status'
               element={
                 <ProtectedRoute>
                   <PageLayout>
@@ -242,7 +265,7 @@ const App = () => {
               }
             />
             <Route
-              path="/applications/:applicationId"
+              path='/applications/:applicationId'
               element={
                 <ProtectedRoute>
                   <PageLayout>

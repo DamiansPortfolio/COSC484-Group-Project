@@ -11,9 +11,11 @@
     "lint": "cd frontend && npm run lint"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "node-fetch": "^3.3.2"
   }
 }

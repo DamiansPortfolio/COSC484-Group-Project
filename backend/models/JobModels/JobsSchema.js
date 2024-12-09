@@ -1,15 +1,6 @@
-/**
- * Job Schema
- *
- * Core schema for managing art commission jobs. Handles the complete lifecycle
- * from posting to completion, including:
- * - Job details and requirements
- * - Application processing
- * - Milestone tracking
- * - Project timeline management
- */
 import mongoose from "mongoose"
 
+// Define the requirement schema first
 const requirementSchema = new mongoose.Schema({
   skillRequired: { type: String, required: true },
   experienceLevel: {
@@ -20,6 +11,7 @@ const requirementSchema = new mongoose.Schema({
   description: { type: String },
 })
 
+// Define the milestone schema
 const milestoneSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
@@ -39,11 +31,24 @@ const milestoneSchema = new mongoose.Schema({
   ],
 })
 
+// Main job schema
 const jobSchema = new mongoose.Schema({
   requesterId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Requester",
     required: true,
+  },
+  // Add accepted artist field
+  acceptedArtistId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Artist",
+    default: null,
+  },
+  // Add accepted application reference
+  acceptedApplicationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Application",
+    default: null,
   },
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -76,10 +81,12 @@ const jobSchema = new mongoose.Schema({
   },
   requirements: [requirementSchema],
   milestones: [milestoneSchema],
-  applications: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Application"
-}],
+  applications: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Application",
+    },
+  ],
   status: {
     type: String,
     enum: ["draft", "open", "in_progress", "completed", "cancelled"],
@@ -95,9 +102,33 @@ const jobSchema = new mongoose.Schema({
     applicationCount: { type: Number, default: 0 },
     lastModified: { type: Date, default: Date.now },
   },
+  startedAt: {
+    type: Date,
+    default: null,
+  },
+  completedAt: {
+    type: Date,
+    default: null,
+  },
   tags: [String],
   createdAt: { type: Date, default: Date.now },
 })
 
-const Job = mongoose.model("Job", jobSchema, "job_listings")  // Changed collection name to "job_listings"
+// Add methods to handle artist acceptance
+jobSchema.methods.acceptArtist = async function (applicationId) {
+  const application = await this.model("Application").findById(applicationId)
+  if (!application) {
+    throw new Error("Application not found")
+  }
+
+  this.acceptedArtistId = application.artistProfileId
+  this.acceptedApplicationId = applicationId
+  this.status = "in_progress"
+  this.startedAt = new Date()
+  this.visibility = "private"
+
+  return this.save()
+}
+
+const Job = mongoose.model("Job", jobSchema, "job_listings")
 export default Job
