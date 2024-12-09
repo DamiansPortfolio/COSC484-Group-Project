@@ -3,8 +3,6 @@ import { generateToken } from "../../middleware/authMiddleware.js"
 import Artist from "../../models/ArtistModels/ArtistSchema.js"
 import Requester from "../../models/RequesterModels/RequesterSchema.js"
 
-
-
 const userController = {
   loginUser: async (req, res) => {
     console.log("Login attempt received", { body: req.body })
@@ -61,13 +59,14 @@ const userController = {
         return res.status(400).json({ message: "All fields are required" })
       }
 
-      if (username.length < 3 ||
+      if (
+        username.length < 3 ||
         username.length > 24 ||
         password.length <= 7 ||
         /\d/.test(password) === false ||
         /[^a-zA-Z0-9]/.test(password) === false ||
-        /[A-Z]/.test(password) === false) {
-
+        /[A-Z]/.test(password) === false
+      ) {
         var error = []
 
         //test if the username is between 3 and 24 characters
@@ -93,14 +92,63 @@ const userController = {
         }
 
         //test if there is a capital letter in the password
-        if (!(/[A-Z]/.test(password))) {
+        if (!/[A-Z]/.test(password)) {
           error.push("password must contain a capital letter")
         }
 
         var errMessage = ""
         error.forEach(function (x, i) {
           if (i === error.length - 1) {
-            errMessage += x;
+            errMessage += x
+          } else {
+            errMessage += x + ", "
+          }
+        })
+
+        return res.status(400).json({ message: errMessage })
+      }
+
+      if (
+        username.length < 3 ||
+        username.length > 24 ||
+        password.length <= 7 ||
+        /\d/.test(password) === false ||
+        /[^a-zA-Z0-9]/.test(password) === false ||
+        /[A-Z]/.test(password) === false
+      ) {
+        var error = []
+
+        //test if the username is between 3 and 24 characters
+        if (username.length < 3) {
+          error.push("Username must be greater than 3 characters")
+        } else if (username.length > 24) {
+          error.push("Username must be less than 24 characters")
+        }
+
+        //test if password if greater than 8 characters
+        if (password.length <= 7) {
+          error.push("Password must be greater than 8 characters")
+        }
+
+        //test if there is a number in the password
+        if (!/\d/.test(password)) {
+          error.push("Password must contain at least one number")
+        }
+
+        //test if there is a special character in the password
+        if (!/[^a-zA-Z0-9]/.test(password)) {
+          error.push("Password must contain a special character")
+        }
+
+        //test if there is a capital letter in the password
+        if (!/[A-Z]/.test(password)) {
+          error.push("password must contain a capital letter")
+        }
+
+        var errMessage = ""
+        error.forEach(function (x, i) {
+          if (i === error.length - 1) {
+            errMessage += x
           } else {
             errMessage += x + ", "
           }
@@ -132,9 +180,9 @@ const userController = {
 
       // Create the corresponding profile based on role
       try {
-        if (role === 'artist') {
+        if (role === "artist") {
           await Artist.create({ userId: user._id })
-        } else if (role === 'requester') {
+        } else if (role === "requester") {
           await Requester.create({ userId: user._id })
         }
       } catch (profileError) {
@@ -152,11 +200,10 @@ const userController = {
         token,
         message: "User created successfully",
       })
-
     } catch (error) {
       console.error("Registration error:", error)
       res.status(500).json({
-        message: error.message || "Failed to create user"
+        message: error.message || "Failed to create user",
       })
     }
   },
@@ -165,6 +212,46 @@ const userController = {
     // With local storage, logout is handled on the client side
     // We just send a success response
     res.status(200).json({ message: "Logged out successfully" })
+  },
+
+  searchUsers: async (req, res) => {
+    try {
+      const { role } = req.query
+      let query = {
+        active: true,
+        _id: { $ne: req.user.id }, // Exclude current user
+      }
+
+      // Only add role filter if specified (either 'artist' or 'requester')
+      if (role && role !== "all") {
+        query.role = role
+      }
+
+      const users = await User.find(query)
+        .select("username name role avatarUrl")
+        .sort("name")
+
+      res.status(200).json(users)
+    } catch (error) {
+      console.error("Search users error:", error)
+      res.status(500).json({ message: "Failed to search users" })
+    }
+  },
+
+  getAllUsers: async (req, res) => {
+    try {
+      const users = await User.find({
+        active: true,
+        _id: { $ne: req.user.id },
+      })
+        .select("username name role avatarUrl")
+        .sort("name")
+
+      res.status(200).json(users)
+    } catch (error) {
+      console.error("Get all users error:", error)
+      res.status(500).json({ message: "Failed to get users" })
+    }
   },
 
   checkAuth: async (req, res) => {
@@ -215,25 +302,25 @@ const userController = {
 
   getProfileType: async (req, res) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params
 
       // Check if it's an Artist profile
-      const isArtist = await Artist.findOne({ userId: id });
+      const isArtist = await Artist.findOne({ userId: id })
       if (isArtist) {
-        return res.status(200).json({ type: "artist" });
+        return res.status(200).json({ type: "artist" })
       }
 
       // Check if it's a Requester profile
-      const isRequester = await Requester.findOne({ userId: id });
+      const isRequester = await Requester.findOne({ userId: id })
       if (isRequester) {
-        return res.status(200).json({ type: "requester" });
+        return res.status(200).json({ type: "requester" })
       }
 
       // If neither, return not found
-      return res.status(404).json({ message: "Profile type not found" });
+      return res.status(404).json({ message: "Profile type not found" })
     } catch (error) {
-      console.error("Error fetching profile type:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Error fetching profile type:", error)
+      res.status(500).json({ message: "Internal server error" })
     }
   },
 }
