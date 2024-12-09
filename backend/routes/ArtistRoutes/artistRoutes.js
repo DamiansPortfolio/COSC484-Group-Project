@@ -23,5 +23,6 @@ router.post(
   artistController.addPortfolioItem
 )
 router.put("/:userId", verifyToken, artistController.updateArtistProfile)
+router.get("/:userId/applications", verifyToken, artistController.getArtistApplications) // Added this line
 
 export default router

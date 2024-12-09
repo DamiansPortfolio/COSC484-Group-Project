@@ -5,6 +5,7 @@ import userRoutes from "./routes/UserRoutes/userRoutes.js"
 import artistRoutes from "./routes/ArtistRoutes/artistRoutes.js"
 import requesterRoutes from "./routes/RequesterRoutes/requesterRoutes.js"
 import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
+import applicationsRoutes from "./routes/ApplicationRoutes/applicationsRoutes.js";
 import { config, connectDB } from "./config/config.js"
 
 // Load environment variables
@@ -34,6 +35,7 @@ app.use("/api/users", userRoutes)
 app.use("/api/artists", artistRoutes)
 app.use("/api/requesters", requesterRoutes)
 app.use("/api/jobs", jobRoutes)
+app.use("/api/applications", applicationsRoutes);
 
 // Wildcard route
 app.all("*", (req, res) => {
