@@ -1,4 +1,3 @@
-// server.js
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
@@ -11,7 +10,6 @@ import jobRoutes from "./routes/JobRoutes/jobsRoutes.js"
 import messageRoutes from "./routes/MessageRoutes/messageRoutes.js"
 import applicationsRoutes from "./routes/ApplicationRoutes/applicationsRoutes.js"
 import statisticsRoutes from "./routes/StatisticsRoutes/statisticsRoutes.js"
-
 import { config, connectDB } from "./config/config.js"
 
 dotenv.config()
@@ -20,6 +18,11 @@ console.log("Starting server in mode:", process.env.NODE_ENV)
 const app = express()
 const httpServer = createServer(app)
 
+// CORS middleware
+app.use(cors(config.cors))
+app.use(express.json())
+
+// Socket.IO setup with CORS
 const io = new Server(httpServer, {
   cors: {
     origin: config.cors.origin,
@@ -42,7 +45,6 @@ io.on("connection", (socket) => {
     socket.to(data.receiverId).emit("receive-message", data.message)
   })
 
-  // Add new handler for marking messages as read
   socket.on("mark-read", (data) => {
     console.log("Marking messages as read:", data)
     socket.to(data.senderId).emit("messages-read", {
@@ -60,9 +62,7 @@ io.on("connection", (socket) => {
   })
 })
 
-app.use(cors(config.cors))
-app.use(express.json())
-
+// Authentication middleware
 app.use((req, res, next) => {
   const authHeader = req.headers["authorization"]
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -80,7 +80,7 @@ app.use("/api/applications", applicationsRoutes)
 app.use("/api/statistics", statisticsRoutes)
 app.use("/api/messages", messageRoutes)
 
-// Update wildcard route to include new endpoint
+// 404 handler
 app.all("*", (req, res) => {
   res.status(404).json({
     message: `The endpoint ${req.originalUrl} does not exist.`,
@@ -97,11 +97,13 @@ app.all("*", (req, res) => {
   })
 })
 
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({ message: err.message })
 })
 
+// Server startup
 const startServer = async () => {
   try {
     await connectDB()
