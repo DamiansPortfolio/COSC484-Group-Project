@@ -10,6 +10,7 @@ const JobCard = ({ job }) => {
   const formatDate = (date) => new Date(date).toLocaleDateString()
 
   return (
+    // Card component to display job details, navigates to job status on click
     <Card 
       className="hover:shadow-lg transition-shadow cursor-pointer"
       onClick={() => navigate(`/jobs/${job._id}/status`)}
@@ -44,6 +45,7 @@ const JobCard = ({ job }) => {
   )
 }
 
+// MyJobs component manages and displays a list of jobs posted by the user
 const MyJobs = () => {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,12 +53,13 @@ const MyJobs = () => {
   const { user } = useSelector((state) => state.user)
 
   useEffect(() => {
+    // Fetch jobs posted by the user
     const fetchJobs = async () => {
       if (!user?._id) return
 
       try {
         const token = localStorage.getItem('token')
-        // First get requester profile 
+        // Fetch requester profile 
         const requesterResponse = await fetch(
           `${import.meta.env.VITE_API_URL}/api/requesters/${user._id}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -66,7 +69,7 @@ const MyJobs = () => {
         if (!requesterResponse.ok) throw new Error('Failed to fetch requester profile')
         const requesterData = await requesterResponse.json()
 
-        // Then fetch job details for each job ID in the requester's jobs array
+        // Fetch job details for each job ID in the requester's jobs array
         const jobPromises = requesterData.jobs.map(jobId => 
           fetch(`${import.meta.env.VITE_API_URL}/api/jobs/${jobId}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -74,18 +77,19 @@ const MyJobs = () => {
         )
 
         const jobsData = await Promise.all(jobPromises)
-        setJobs(jobsData)
+        setJobs(jobsData) 
       } catch (err) {
         console.error('Error:', err)
         setError('Failed to load jobs')
       } finally {
-        setLoading(false)
+        setLoading(false) 
       }
     }
 
     fetchJobs()
   }, [user])
 
+  // Display loading spinner if data is still loading
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -94,6 +98,7 @@ const MyJobs = () => {
     )
   }
 
+  // Display error message if there's an error
   if (error) {
     return (
       <Card>
@@ -104,6 +109,7 @@ const MyJobs = () => {
     )
   }
 
+  // Main content for displaying jobs posted by the user
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       <header className="mb-8">

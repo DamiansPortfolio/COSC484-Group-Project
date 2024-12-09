@@ -125,6 +125,7 @@ const ReviewsSection = ({ reviews = [], averageRating = 0 }) => (
   </Card>
 )
 
+
 const RequesterProfile = () => {
   const { id } = useParams()
   const [requesterData, setRequesterData] = useState(null)

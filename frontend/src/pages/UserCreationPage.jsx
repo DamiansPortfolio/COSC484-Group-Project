@@ -46,12 +46,14 @@ const UserCreationPage = () => {
   const dispatch = useDispatch()
   const { loading, error, isAuthenticated } = useSelector((state) => state.user)
 
+  // If the user is authenticated, redirect to the dashboard
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard")
     }
   }, [isAuthenticated, navigate])
 
+  // Handle input change for form fields
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -60,6 +62,7 @@ const UserCreationPage = () => {
     }))
   }
 
+  // Handle role change for the user (Artist/Requester)
   const handleRoleChange = (value) => {
     setFormData((prev) => ({
       ...prev,
@@ -67,6 +70,7 @@ const UserCreationPage = () => {
     }))
   }
 
+  // Validate the form fields
   const validateForm = () => {
     if (!formData.username.trim()) {
       setFormError("Username is required")
@@ -87,10 +91,12 @@ const UserCreationPage = () => {
     return true
   }
 
+  // Handle form submission
 const handleSubmit = async (e) => {
   e.preventDefault()
   setFormError("")
 
+  // Validate the form before submitting
   if (!validateForm()) {
     return
   }
@@ -108,6 +114,7 @@ const handleSubmit = async (e) => {
         "Unable to create account. Please try again."
     )
 
+    // Handle specific errors (username or email already exists)
     if (error.response?.data?.message?.includes("already exists")) {
       if (error.response.data.message.includes("email")) {
         setFormData((prev) => ({ ...prev, email: "" }))

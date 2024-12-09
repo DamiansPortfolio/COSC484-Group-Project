@@ -41,7 +41,7 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* How It Works Section: Explains the process of using the platform*/}
       <section className='py-20 w-full bg-gray-50'>
         <div className='w-full max-w-7xl mx-auto px-6'>
           <div className='text-center mb-16'>
@@ -52,6 +52,7 @@ const WelcomePage = () => {
             </p>
           </div>
 
+          {/* Process Cards */}
           <div className='grid md:grid-cols-3 gap-8'>
             <Card>
               <CardHeader>
@@ -68,6 +69,7 @@ const WelcomePage = () => {
               </CardContent>
             </Card>
 
+            {/* Card for connecting with others */}
             <Card>
               <CardHeader>
                 <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
@@ -83,6 +85,7 @@ const WelcomePage = () => {
               </CardContent>
             </Card>
 
+            {/* Card for collaboration */}
             <Card>
               <CardHeader>
                 <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
@@ -101,7 +104,7 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section: Lists the key features of the platform */}
       <section className='py-20 w-full bg-white'>
         <div className='w-full max-w-7xl mx-auto px-6'>
           <div className='text-center mb-16'>
@@ -111,6 +114,7 @@ const WelcomePage = () => {
             </p>
           </div>
 
+          {/* Feature Cards */}
           <div className='grid md:grid-cols-4 gap-8'>
             <div className='text-center'>
               <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4'>
@@ -122,6 +126,7 @@ const WelcomePage = () => {
               </p>
             </div>
 
+            {/* Card for job listings */}
             <div className='text-center'>
               <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4'>
                 <Briefcase className='w-6 h-6 text-purple-600' />
@@ -132,6 +137,7 @@ const WelcomePage = () => {
               </p>
             </div>
 
+            {/* Card for secure payments */}
             <div className='text-center'>
               <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4'>
                 <Shield className='w-6 h-6 text-purple-600' />
@@ -142,6 +148,7 @@ const WelcomePage = () => {
               </p>
             </div>
 
+            {/* Card for reviews and ratings */}  
             <div className='text-center'>
               <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4'>
                 <Star className='w-6 h-6 text-purple-600' />
@@ -155,7 +162,7 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section: Final call to action to encourage registration or sign in */}
       <section className='py-20 w-full bg-gradient-to-r from-purple-600 to-blue-500 text-white'>
         <div className='w-full max-w-7xl mx-auto px-6 text-center'>
           <h2 className='text-3xl font-bold mb-4'>Ready to Get Started?</h2>
