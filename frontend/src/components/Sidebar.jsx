@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useMemo } from "react"
+import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
   Briefcase,
@@ -9,13 +9,13 @@ import {
   User,
   Menu,
   X,
-} from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
-import { getUserData } from "../redux/actions/userActions";
+} from "lucide-react"
+import { useLocation, Link } from "react-router-dom"
+import { getUserData } from "../redux/actions/userActions"
 
 const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
-  const location = useLocation();
-  const user = getUserData();
+  const location = useLocation()
+  const user = getUserData()
 
   const menuItems = useMemo(() => {
     const commonItems = [
@@ -31,7 +31,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         path: `/profile/${user?._id}`,
         implemented: true,
       },
-    ];
+    ]
 
     const artistItems = [
       {
@@ -62,7 +62,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         implemented: false,
         comingSoon: true,
       },
-    ];
+    ]
 
     const requesterItems = [
       {
@@ -83,22 +83,22 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         name: "Messages",
         icon: MessageSquare,
         path: "/messages",
-        implemented: false,
-        comingSoon: true,
+        implemented: true,
+        comingSoon: false,
       },
-    ];
+    ]
 
     return user?.role === "artist"
       ? [...commonItems, ...artistItems]
       : user?.role === "requester"
       ? [...commonItems, ...requesterItems]
-      : commonItems;
-  }, [user]);
+      : commonItems
+  }, [user])
 
   const isActivePath = (path) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
+    if (path === "/") return location.pathname === "/"
+    return location.pathname.startsWith(path)
+  }
 
   return (
     <div
@@ -114,13 +114,13 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         overflow-hidden
       `}
     >
-      <nav className="flex-1 py-4">
-        <ul className="space-y-2 px-2">
+      <nav className='flex-1 py-4'>
+        <ul className='space-y-2 px-2'>
           <li>
             <Button
-              variant="ghost"
+              variant='ghost'
               onClick={toggleSidebar}
-              className="w-full justify-center p-2 hover:bg-gray-100"
+              className='w-full justify-center p-2 hover:bg-gray-100'
             >
               {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
@@ -142,7 +142,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                       duration-300
                     `}
                   >
-                    <item.icon size={24} className="min-w-[24px]" />
+                    <item.icon size={24} className='min-w-[24px]' />
                     <span
                       className={`
                         ml-2
@@ -161,7 +161,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                 </Link>
               ) : (
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   className={`
                     w-full 
                     justify-start
@@ -174,7 +174,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                   `}
                   disabled
                 >
-                  <item.icon size={24} className="min-w-[24px]" />
+                  <item.icon size={24} className='min-w-[24px]' />
                   <div
                     className={`
                       flex items-center justify-between
@@ -188,10 +188,10 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                       }
                     `}
                   >
-                    <span className="ml-2 truncate">{item.name}</span>
+                    <span className='ml-2 truncate'>{item.name}</span>
                     {item.comingSoon && sidebarOpen && (
                       <span
-                        className="
+                        className='
                         ml-1
                         text-[10px]
                         bg-gray-100
@@ -201,7 +201,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                         rounded-full
                         font-medium
                         whitespace-nowrap
-                      "
+                      '
                       >
                         Coming Soon
                       </span>
@@ -211,7 +211,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                   {/* Tooltip for collapsed state */}
                   {!sidebarOpen && (
                     <div
-                      className="
+                      className='
                         absolute 
                         left-full 
                         ml-2 
@@ -226,7 +226,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
                         transition-opacity 
                         whitespace-nowrap 
                         z-50
-                      "
+                      '
                     >
                       {item.name} - Coming Soon
                     </div>
@@ -238,7 +238,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
         </ul>
       </nav>
     </div>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar

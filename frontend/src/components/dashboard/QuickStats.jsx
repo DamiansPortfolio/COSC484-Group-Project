@@ -46,14 +46,24 @@ const QuickStats = () => {
           description: "Current pending applications",
         },
         {
-          title: "Total Applications",
-          value: data.totalApplications ?? 0,
-          description: "All applications submitted",
+          title: "Success Rate",
+          value: `${data.successRate ?? 0}%`,
+          description: "Completed vs accepted jobs",
+        },
+        {
+          title: "Acceptance Rate",
+          value: `${data.acceptanceRate ?? 0}%`,
+          description: "Applications accepted",
         },
         {
           title: "Completed Jobs",
           value: data.completedJobs ?? 0,
           description: "Successfully completed",
+        },
+        {
+          title: "Total Applications",
+          value: data.totalApplications ?? 0,
+          description: "All applications submitted",
         },
       ]
     }
@@ -66,14 +76,24 @@ const QuickStats = () => {
         description: "Currently open positions",
       },
       {
-        title: "Total Applications",
-        value: data.totalApplications ?? 0,
-        description: "Applications received",
+        title: "Applications Per Job",
+        value: data.avgApplicationsPerJob ?? 0,
+        description: "Average applications received",
       },
       {
-        title: "Completed Jobs",
-        value: data.completedJobs ?? 0,
-        description: "Successfully completed",
+        title: "Jobs With Hires",
+        value: data.jobsWithHires ?? 0,
+        description: "Jobs with accepted artists",
+      },
+      {
+        title: "Total Jobs",
+        value: data.totalJobs ?? 0,
+        description: "All posted jobs",
+      },
+      {
+        title: "Total Applications",
+        value: data.totalApplications ?? 0,
+        description: "All applications received",
       },
     ]
   }
@@ -103,7 +123,7 @@ const QuickStats = () => {
       <CardHeader>
         <CardTitle>Quick Stats</CardTitle>
       </CardHeader>
-      <CardContent className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      <CardContent className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4'>
         {stats?.map((stat) => (
           <Card key={stat.title} className='overflow-hidden'>
             <CardContent className='p-4'>

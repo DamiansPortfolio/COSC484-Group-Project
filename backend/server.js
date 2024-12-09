@@ -77,7 +77,8 @@ app.use("/api/artists", artistRoutes)
 app.use("/api/requesters", requesterRoutes)
 app.use("/api/jobs", jobRoutes)
 app.use("/api/applications", applicationsRoutes)
-app.use("/api/statistics", statisticsRoutes) // Add this line
+app.use("/api/statistics", statisticsRoutes)
+app.use("/api/messages", messageRoutes)
 
 // Update wildcard route to include new endpoint
 app.all("*", (req, res) => {

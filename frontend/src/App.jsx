@@ -26,6 +26,7 @@ import PostJob from "./pages/PostJob"
 import MyJobs from "./pages/MyJobs"
 import JobStatus from "./pages/JobStatus"
 import IndividualApplication from "./pages/IndividualApplication"
+import MessagesPage from "./pages/MessagesPage"
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -260,6 +261,16 @@ const App = () => {
                 <ProtectedRoute>
                   <PageLayout>
                     <JobStatus />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/messages'
+              element={
+                <ProtectedRoute>
+                  <PageLayout>
+                    <MessagesPage />
                   </PageLayout>
                 </ProtectedRoute>
               }
