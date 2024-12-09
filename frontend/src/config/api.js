@@ -1,6 +1,14 @@
 // src/config/api.js
+
+// Helper function to clean URL string
+const cleanUrl = (url) => {
+  if (!url) return ""
+  // Remove quotes and trailing slashes
+  return url.replace(/['"]+/g, "").replace(/\/+$/, "")
+}
+
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: cleanUrl(import.meta.env.VITE_API_URL),
   isProduction: import.meta.env.VITE_API_URL.includes("amazonaws"),
   environment: import.meta.env.VITE_API_URL.includes("localhost")
     ? "local"

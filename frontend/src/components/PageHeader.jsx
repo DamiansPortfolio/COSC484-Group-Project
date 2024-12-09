@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import logo from "../assets/commission.svg"
+import logo from "../assets/paletteLogo.png"
 
 const PageHeader = () => {
   const user = getUserData()

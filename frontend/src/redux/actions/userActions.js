@@ -21,11 +21,13 @@ getApiConfig()
 
 // API instance creation with environment-aware configuration
 const api = axios.create({
-  baseURL: API_CONFIG.baseURL,
+  baseURL: API_CONFIG.baseURL.replace(/['"]+/g, ""), // Remove any remaining quotes
   headers: {
     "Content-Type": "application/json",
   },
 })
+
+console.log("Axios baseURL:", api.defaults.baseURL)
 
 // Encryption/Decryption utilities
 const encryptData = (data) => {
