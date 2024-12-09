@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useSelector, useDispatch } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
-import { searchUsers, sendMessage } from "../redux/actions/messageActions"
+import { searchUsers, sendMessage } from "../../redux/actions/messageActions"
 
 const ProfileHeader = ({ name, title, location, memberSince }) => {
   const { user } = useSelector((state) => state.user)
@@ -14,19 +14,16 @@ const ProfileHeader = ({ name, title, location, memberSince }) => {
 
   const handleHireClick = async () => {
     try {
-      // Search for the user to get their details
       const result = await dispatch(searchUsers("artist"))
       if (result.success) {
         const artistUser = result.data.find((u) => u._id === id)
         if (artistUser) {
-          // Send initial message
           await dispatch(
             sendMessage(
               id,
               `Hi ${name}, I'm interested in hiring you for commission work. Would you be available to discuss potential projects?`
             )
           )
-          // Navigate to messages page
           navigate("/messages")
         }
       }
