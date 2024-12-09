@@ -1,7 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useSelector } from "react-redux"
+import { useParams } from "react-router-dom"
 
 const ProfileHeader = ({ name, title, location, memberSince }) => {
+  const { user } = useSelector((state) => state.user)
+  const { id } = useParams()
+
+  const isOwnProfile = user?._id === id
+
   return (
     <Card>
       <CardContent className='flex items-center space-x-4 p-6'>
@@ -15,9 +22,11 @@ const ProfileHeader = ({ name, title, location, memberSince }) => {
             {location} | Member since {memberSince}
           </p>
         </div>
-        <Button className='bg-green-500 hover:bg-green-600 text-white'>
-          Hire Me
-        </Button>
+        {!isOwnProfile && user?.role === "requester" && (
+          <Button className='bg-green-500 hover:bg-green-600 text-white'>
+            Hire Me
+          </Button>
+        )}
       </CardContent>
     </Card>
   )
