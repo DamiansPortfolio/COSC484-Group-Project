@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate, Link } from "react-router-dom"
 import { registerUser } from "../redux/actions/userActions"
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -19,19 +20,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
-/**
- * User Registration Component
- *
- * Handles new user account creation with role selection.
- * Features:
- * - Complete form validation
- * - Error handling and display
- * - Role selection (Artist/Requester)
- * - Password requirements
- * - Automatic redirection after registration
- */
 const UserCreationPage = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -40,11 +29,10 @@ const UserCreationPage = () => {
     password: "",
     role: "requester",
   })
-  const [formError, setFormError] = useState("")
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { loading, error, isAuthenticated } = useSelector((state) => state.user)
+  const { loading, isAuthenticated } = useSelector((state) => state.user)
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -67,56 +55,71 @@ const UserCreationPage = () => {
     }))
   }
 
+  const validatePassword = (password) => {
+    const hasNumber = /\d/.test(password)
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    const hasMinLength = password.length >= 8
+
+    const errors = []
+    if (!hasMinLength)
+      errors.push("Password must be at least 8 characters long")
+    if (!hasNumber) errors.push("Password must contain at least one number")
+    if (!hasSpecial) errors.push("Password must contain a special character")
+
+    return errors
+  }
+
   const validateForm = () => {
     if (!formData.username.trim()) {
-      setFormError("Username is required")
+      toast.error("Username is required")
       return false
     }
-    if (!formData.name.trim()) {     // Added this check
-      setFormError("Name is required")
+    if (!formData.name.trim()) {
+      toast.error("Name is required")
       return false
     }
     if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      setFormError("Please enter a valid email address")
+      toast.error("Please enter a valid email address")
       return false
     }
-    if (formData.password.length < 8) {
-      setFormError("Password must be at least 8 characters long")
+
+    const passwordErrors = validatePassword(formData.password)
+    if (passwordErrors.length > 0) {
+      passwordErrors.forEach((error) => toast.error(error))
       return false
     }
+
     return true
   }
 
-const handleSubmit = async (e) => {
-  e.preventDefault()
-  setFormError("")
+  const handleSubmit = async (e) => {
+    e.preventDefault()
 
-  if (!validateForm()) {
-    return
-  }
-
-  try {
-    const result = await dispatch(registerUser(formData))
-    if (result.success) {
-      navigate("/dashboard")  // Add this line to redirect on success
-    } else {
-      setFormError(result.error || "Unable to create account. Please try again.")
+    if (!validateForm()) {
+      return
     }
-  } catch (error) {
-    setFormError(
-      error.response?.data?.message ||
-        "Unable to create account. Please try again."
-    )
 
-    if (error.response?.data?.message?.includes("already exists")) {
-      if (error.response.data.message.includes("email")) {
+    try {
+      const result = await dispatch(registerUser(formData))
+      if (result.success) {
+        toast.success("Account created successfully! Welcome aboard!")
+        navigate("/dashboard")
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || ""
+      if (errorMessage.includes("email already exists")) {
+        toast.error("This email is already registered")
         setFormData((prev) => ({ ...prev, email: "" }))
-      } else if (error.response.data.message.includes("username")) {
+      } else if (errorMessage.includes("username already exists")) {
+        toast.error("This username is already taken")
         setFormData((prev) => ({ ...prev, username: "" }))
+      } else if (error.response?.status === 429) {
+        toast.error("Too many registration attempts. Please try again later.")
+      } else {
+        toast.error("Registration failed. Please try again.")
       }
     }
   }
-}
 
   return (
     <div className='flex justify-center py-8'>
@@ -178,12 +181,6 @@ const handleSubmit = async (e) => {
                 <SelectItem value='artist'>Artist</SelectItem>
               </SelectContent>
             </Select>
-
-            {formError && (
-              <Alert variant='destructive'>
-                <AlertDescription>{formError}</AlertDescription>
-              </Alert>
-            )}
 
             <Button
               type='submit'

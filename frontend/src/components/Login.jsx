@@ -1,7 +1,9 @@
+// Login.jsx
 import React, { useState, useEffect } from "react"
 import { useDispatch } from "react-redux"
 import { loginUser, isAuthenticated } from "../redux/actions/userActions"
 import { useNavigate, Link } from "react-router-dom"
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,48 +13,54 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [formError, setFormError] = useState("")
   const [loading, setLoading] = useState(false)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  // Navigation effect
   useEffect(() => {
     if (isAuthenticated()) {
       navigate("/dashboard")
     }
   }, [navigate])
 
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      setFormError("")
-    }
-  }, [])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setFormError("")
-    if (!username.trim() || !password.trim()) {
-      setFormError("Please enter both username and password")
+    if (!username.trim()) {
+      toast.error("Username is required")
       return
     }
+    if (!password.trim()) {
+      toast.error("Password is required")
+      return
+    }
+
     setLoading(true)
     try {
       const result = await dispatch(loginUser({ username, password }))
       if (!result.success) {
-        setFormError(result.error)
+        const errorMessage = result.error?.toLowerCase() || ""
+        if (errorMessage.includes("invalid credentials")) {
+          toast.error("Invalid username or password")
+        } else if (errorMessage.includes("user not found")) {
+          toast.error("User does not exist")
+        } else {
+          toast.error(result.error || "Login failed")
+        }
       } else if (isAuthenticated()) {
+        toast.success("Welcome back!")
         navigate("/dashboard")
       }
     } catch (error) {
-      setFormError("An error occurred during login. Please try again.")
+      if (error.response?.status === 429) {
+        toast.error("Too many login attempts. Please try again later.")
+      } else {
+        toast.error("Login failed. Please check your connection and try again.")
+      }
     } finally {
       setLoading(false)
     }
@@ -90,11 +98,6 @@ const Login = () => {
                 className='w-full'
               />
             </div>
-            {formError && (
-              <Alert variant='destructive'>
-                <AlertDescription>{formError}</AlertDescription>
-              </Alert>
-            )}
             <Button
               type='submit'
               disabled={loading}

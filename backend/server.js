@@ -1,3 +1,4 @@
+// server.js
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
@@ -18,11 +19,14 @@ console.log("Starting server in mode:", process.env.NODE_ENV)
 const app = express()
 const httpServer = createServer(app)
 
-// CORS middleware
-app.use(cors(config.cors))
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+)
 app.use(express.json())
 
-// Socket.IO setup with CORS
 const io = new Server(httpServer, {
   cors: {
     origin: config.cors.origin,
@@ -31,7 +35,6 @@ const io = new Server(httpServer, {
   },
 })
 
-// Socket.IO connection handling
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id)
 
@@ -62,16 +65,14 @@ io.on("connection", (socket) => {
   })
 })
 
-// Authentication middleware
 app.use((req, res, next) => {
   const authHeader = req.headers["authorization"]
-  if (authHeader && authHeader.startsWith("Bearer ")) {
+  if (authHeader?.startsWith("Bearer ")) {
     req.token = authHeader.substring(7)
   }
   next()
 })
 
-// Register API routes
 app.use("/api/users", userRoutes)
 app.use("/api/artists", artistRoutes)
 app.use("/api/requesters", requesterRoutes)
@@ -80,7 +81,6 @@ app.use("/api/applications", applicationsRoutes)
 app.use("/api/statistics", statisticsRoutes)
 app.use("/api/messages", messageRoutes)
 
-// 404 handler
 app.all("*", (req, res) => {
   res.status(404).json({
     message: `The endpoint ${req.originalUrl} does not exist.`,
@@ -97,13 +97,11 @@ app.all("*", (req, res) => {
   })
 })
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({ message: err.message })
 })
 
-// Server startup
 const startServer = async () => {
   try {
     await connectDB()
