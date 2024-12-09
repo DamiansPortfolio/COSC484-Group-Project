@@ -8,7 +8,7 @@ test.describe("Homepage Tests", () => {
 
   test("homepage has correct title", async ({ page }) => {
     const title = await page.title()
-    expect(title).toBe("Creative Project Commissioning Platform")
+    expect(title).toBe("Palette")
   })
 
   test("Get Started, Sign In, and Create Account buttons are visible", async ({
